@@ -1,7 +1,7 @@
 # LLM Finetuning
 
 <br>
-<img src="plots/llm_training.png" alt="LLM Training" align="middle" height=100>
+<img src="plots/llm_training.png" alt="LLM Training" align="middle" height=500>
 
 - Supervised Fine-Tuning (SFT) and Reinforcement Learning from Human Feedback (RLHF) are two fundamental processes for enhancing the capabilities of Language Models (LMs) post pre-training, aligning them better with human preferences.
 
