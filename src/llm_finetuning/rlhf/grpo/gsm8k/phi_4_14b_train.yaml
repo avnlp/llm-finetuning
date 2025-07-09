@@ -1,0 +1,78 @@
+# Phi-4 14B Configuration
+model:
+  name: "unsloth/Phi-4"
+  max_seq_length: 512
+  quantization:
+    load_in_4bit: true
+  lora:
+    r: 16
+    alpha: 16
+    dropout: 0
+    target_modules:
+      - "gate_proj"
+      - "up_proj"
+      - "down_proj"
+    use_gradient_checkpointing: "unsloth"
+    random_state: 3407
+
+dataset:
+  name: "openai/gsm8k"
+  config: "main"
+  split: "train"
+  preprocessing:
+    system_prompt: |
+      Respond in the following format:
+      <reasoning>
+      ...
+      </reasoning>
+      <answer>
+      ...
+      </answer>
+    answer_extraction: "extract_hash_answer"
+
+training:
+  type: "GRPO"
+  config:
+    use_vllm: true
+    learning_rate: 5e-6
+    adam_beta1: 0.9
+    adam_beta2: 0.99
+    weight_decay: 0.1
+    warmup_ratio: 0.1
+    lr_scheduler: "cosine"
+    optim: "paged_adamw_8bit"
+    batch_size: 1
+    gradient_accumulation_steps: 1
+    max_steps: 100
+    save_steps: 250
+    logging_steps: 1
+    fp16: true
+    bf16: false
+    max_grad_norm: 0.1
+  generation:
+    num_generations: 6
+    max_prompt_length: 256
+    max_completion_length: 200
+
+rewards:
+  functions:
+    - "xmlcount_reward_func"
+    - "soft_format_reward_func"
+    - "strict_format_reward_func"
+    - "int_reward_func"
+    - "correctness_reward_func"
+
+inference:
+  sampling_params:
+    temperature: 0.8
+    top_p: 0.95
+    max_tokens: 1024
+
+saving:
+  lora_dir: "phi4_grpo_lora"
+  merged_16bit: true
+  gguf:
+    methods: ["q4_k_m", "q8_0"]
+
+output:
+  dir: "outputs"

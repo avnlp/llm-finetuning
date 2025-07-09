@@ -1,0 +1,76 @@
+# Llama 3.1 8B Configuration
+model:
+  name: "meta-llama/meta-Llama-3.1-8B-Instruct"
+  max_seq_length: 1024
+  quantization:
+    load_in_4bit: true
+  lora:
+    r: 32
+    alpha: 32
+    dropout: 0
+    target_modules:
+      - "q_proj"
+      - "k_proj"
+      - "v_proj"
+      - "o_proj"
+      - "gate_proj"
+      - "up_proj"
+      - "down_proj"
+    use_gradient_checkpointing: "unsloth"
+
+dataset:
+  name: "openai/gsm8k"
+  config: "main"
+  split: "train"
+  preprocessing:
+    system_prompt: |
+      Respond in the following format:
+      <reasoning>...</reasoning>
+      <answer>...</answer>
+    answer_extraction: "extract_hash_answer"
+
+training:
+  type: "GRPO"
+  config:
+    learning_rate: 5e-6
+    optim: "paged_adamw_8bit"
+    weight_decay: 0.1
+    warmup_ratio: 0.1
+    lr_scheduler: "cosine"
+    batch_size: 1
+    gradient_accumulation_steps: 1
+    max_steps: 250
+    save_steps: 250
+    logging_steps: 1
+    fp16: true
+    bf16: false
+    max_grad_norm: 0.1
+  generation:
+    num_generations: 6
+    max_prompt_length: 256  # Will be calculated dynamically
+    max_completion_length: 768  # Will be calculated dynamically
+
+rewards:
+  functions:
+    - "xmlcount_reward_func"
+    - "soft_format_reward_func"
+    - "strict_format_reward_func"
+    - "int_reward_func"
+    - "correctness_reward_func"
+
+inference:
+  sampling_params:
+    temperature: 0.8
+    top_p: 0.95
+    max_tokens: 256
+
+saving:
+  lora_dir: "grpo_saved_lora"
+  merged_16bit: false
+  merged_4bit: false
+  gguf: false
+  gguf_f16: false
+  gguf_q4: false
+
+output:
+  dir: "outputs"

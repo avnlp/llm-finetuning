@@ -1,0 +1,63 @@
+# Gemma 3 1B Configuration
+model:
+  name: "unsloth/gemma-3-1b-it"
+  max_seq_length: 1024
+  quantization:
+    load_in_4bit: false
+    load_in_8bit: false
+  lora:
+    r: 8
+    alpha: 8
+    dropout: 0
+    target_modules: "all"
+    use_gradient_checkpointing: false
+
+dataset:
+  name: "openai/gsm8k"
+  config: "main"
+  split: "train"
+  preprocessing:
+    system_prompt: |
+      You are given a problem.
+      Think about the problem and provide your working out.
+      Place it between <start_working_out> and <end_working_out>.
+      Then, provide your solution between <SOLUTION></SOLUTION>
+    special_tokens:
+      reasoning_start: "<start_working_out>"
+      reasoning_end: "<end_working_out>"
+      solution_start: "<SOLUTION>"
+      solution_end: "</SOLUTION>"
+
+training:
+  type: "GRPO"
+  config:
+    learning_rate: 5e-6
+    optim: "adamw_torch_fused"
+    weight_decay: 0.1
+    warmup_ratio: 0.1
+    lr_scheduler: "cosine"
+    batch_size: 1
+    gradient_accumulation_steps: 1
+    max_steps: 50
+    save_steps: 50
+    logging_steps: 1
+    fp16: true
+    bf16: false
+    max_grad_norm: 0.1
+  generation:
+    num_generations: 4
+    max_prompt_length: 256  # Will be calculated dynamically
+    max_completion_length: 768  # Will be calculated dynamically
+    temperature: 0.7
+    top_p: 0.9
+    max_new_tokens: 150
+
+rewards:
+  functions:
+    - "match_format_exactly"
+    - "match_format_approximately"
+    - "check_answer"
+    - "check_numbers"
+
+output:
+  dir: "outputs"

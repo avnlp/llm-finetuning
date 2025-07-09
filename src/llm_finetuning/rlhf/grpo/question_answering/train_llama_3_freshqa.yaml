@@ -1,0 +1,52 @@
+# Configuration for FreshQA training
+model:
+  name: "meta-llama/Meta-Llama-3-8B"
+  pad_token: "eos_token"
+
+dataset:
+  name: "freshqa/freshqa"
+  split: "train"
+  preprocess:
+    context_key: "context"
+    question_key: "question"
+    answer_key: "answer"
+    reasoning_key: "reasoning_level"
+    temporal_key: "temporal_category"
+
+grpo:
+  batch_size: 2
+  mini_batch_size: 1
+  learning_rate: 1.41e-5
+  adap_kl_ctrl: true
+  init_kl_coef: 0.2
+  group_reward_mode: "relative"
+  cliprange: 0.2
+  cliprange_value: 0.2
+  vf_coef: 0.1
+
+training:
+  output_dir: "./grpo_freshqa"
+  num_train_epochs: 1
+  logging_steps: 1
+  save_steps: 10
+  fp16: true
+  max_steps: 20
+
+generation:
+  min_length: -1
+  top_k: 0.0
+  top_p: 0.9
+  do_sample: true
+  max_new_tokens: 150
+  temperature: 0.7
+
+reward:
+  relevancy:
+    threshold: 0.5
+    model: "groq/llama3-70b-8192"
+  correctness:
+    model: "llama3-70b-8192"
+  weights:
+    relevancy: 0.4
+    correctness: 0.4
+    answer_match: 0.2

@@ -1,0 +1,39 @@
+# Configuration for HotpotQA training
+model:
+  name: "groq/llama3-70b-8192"
+  pad_token: "eos_token"
+
+dataset:
+  name: "hotpot_qa"
+  config: "distractor"
+  split: "train"
+  sample_size: 50
+  preprocess_function: "preprocess_hotpot"
+
+grpo:
+  batch_size: 2
+  mini_batch_size: 1
+  learning_rate: 1.41e-5
+  adap_kl_ctrl: true
+  init_kl_coef: 0.2
+  group_reward_mode: "relative"
+  cliprange: 0.2
+  cliprange_value: 0.2
+  vf_coef: 0.1
+
+training:
+  output_dir: "./grpo_hotpotqa"
+  num_train_epochs: 1
+  logging_steps: 1
+  save_steps: 10
+  max_steps: 5
+
+generation:
+  min_length: -1
+  top_k: 0.0
+  top_p: 1.0
+  do_sample: true
+  max_new_tokens: 60
+
+reward:
+  function: "compute_hotpot_reward"
