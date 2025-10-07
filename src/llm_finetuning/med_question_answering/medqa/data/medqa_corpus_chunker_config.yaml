@@ -1,0 +1,7 @@
+corpus_dir: "textbooks/en"
+chunked_dataset_file: "medqa_textbooks_chunked.jsonl"
+hf_dataset_dir: "medqa_textbooks_chunked"
+hf_dataset_name: "awinml/medqa-textbooks-chunked"
+hf_private: false
+partition_by: "title"
+file_extension: ".txt"

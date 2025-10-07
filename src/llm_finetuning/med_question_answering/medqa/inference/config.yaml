@@ -1,0 +1,23 @@
+# Model configuration
+model:
+  name: "unsloth/Qwen3-1.7B-unsloth-bnb-4bit"
+  max_seq_length: 10240
+  lora_rank: 32
+  gpu_memory_utilization: 1.0
+
+# Generation parameters
+generation:
+  temperature: 0.6
+  top_k: 20
+  top_p: 0.95
+  min_p: 0
+  max_new_tokens: 1500
+
+# Dataset configuration
+dataset:
+  name: "avnlp/self_biorag_processed_subset"
+  split: "validation"
+
+# Output configuration
+output:
+  file_name: "generations_qwen3_1.7b.jsonl"

@@ -1,12 +1,12 @@
 # Code taken from: https://colab.research.google.com/drive/1MRgGtLWuZX4ypSfGguFgC-IblTvO2ivM?usp=sharing
 # The code has been rewritten to work with the UltraFeedback dataset.
 
-from unsloth import FastLanguageModel, PatchDPOTrainer
 import torch
-import numpy as np
-from datasets import load_dataset, Dataset
-from trl import KTOConfig, KTOTrainer
+from datasets import Dataset, load_dataset
 from transformers import TextStreamer
+from trl import KTOConfig, KTOTrainer
+from unsloth import FastLanguageModel, PatchDPOTrainer
+
 
 # Apply KTO patch first
 PatchDPOTrainer()
@@ -33,7 +33,15 @@ if tokenizer.chat_template is None:
 model = FastLanguageModel.get_peft_model(
     model,
     r=16,
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    target_modules=[
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+    ],
     lora_alpha=16,
     lora_dropout=0,
     bias="none",
@@ -56,10 +64,15 @@ def process_ultra_feedback(example):
             response = comp["response"]
 
             # Create messages structure
-            messages = [{"role": "user", "content": instruction}, {"role": "assistant", "content": response}]
+            messages = [
+                {"role": "user", "content": instruction},
+                {"role": "assistant", "content": response},
+            ]
 
             # Apply chat template
-            full_text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
+            full_text = tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=False
+            )
 
             # Split into prompt and completion
             assistant_token = "<|assistant|>\n"
@@ -74,11 +87,12 @@ def process_ultra_feedback(example):
                     {
                         "prompt": prompt,
                         "completion": completion,
-                        "label": rating >= 4,  # True for high-quality (rating 4-5), False for low-quality (1-3)
+                        "label": rating
+                        >= 4,  # True for high-quality (rating 4-5), False for low-quality (1-3)
                     }
                 )
         except (KeyError, IndexError, ValueError) as e:
-            print(f"Skipping completion due to error: {str(e)}")
+            print(f"Skipping completion due to error: {e!s}")
             continue
 
     return kto_examples
@@ -141,9 +155,9 @@ print("Model saved to 'kto_model' directory")
 # Inference function
 def generate_response(message):
     messages = [{"role": "user", "content": message}]
-    inputs = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt").to(
-        "cuda"
-    )
+    inputs = tokenizer.apply_chat_template(
+        messages, tokenize=True, add_generation_prompt=True, return_tensors="pt"
+    ).to("cuda")
 
     text_streamer = TextStreamer(tokenizer, skip_special_tokens=True, skip_prompt=True)
     outputs = model.generate(

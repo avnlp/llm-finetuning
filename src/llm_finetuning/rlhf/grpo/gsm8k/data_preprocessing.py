@@ -1,6 +1,3 @@
-from datasets import load_dataset
-
-
 def extract_hash_answer(text: str) -> str | None:
     return text.split("####")[1].strip() if "####" in text else None
 
@@ -19,7 +16,11 @@ def format_gsm8k_dataset(dataset, system_prompt: str) -> dict:
 
 def get_tokenized_lengths(dataset, tokenizer) -> list:
     return dataset.map(
-        lambda x: {"tokens": tokenizer.apply_chat_template(x["prompt"], add_generation_prompt=True, tokenize=True)},
+        lambda x: {
+            "tokens": tokenizer.apply_chat_template(
+                x["prompt"], add_generation_prompt=True, tokenize=True
+            )
+        },
         batched=False,
     )["tokens"]
 

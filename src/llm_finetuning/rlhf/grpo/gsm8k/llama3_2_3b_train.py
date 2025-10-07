@@ -1,22 +1,21 @@
 # Code taken from:
 # Dataset preprocessing for GSM8K is imported from the data_preprocessing.py file, and reward functions are imported from the rewards.py file.
-from unsloth import FastLanguageModel
-import torch
-from datasets import load_dataset
-from unsloth import is_bfloat16_supported
-from trl import GRPOConfig, GRPOTrainer
-import re
+
 from data_preprocessing import (
     format_gsm8k_dataset,
-    get_tokenized_lengths,
     get_max_prompt_length,
+    get_tokenized_lengths,
 )
+from datasets import load_dataset
 from rewards import (
-    match_format_exactly,
-    match_format_approximately,
     check_answer,
     check_numbers,
+    match_format_approximately,
+    match_format_exactly,
 )
+from trl import GRPOConfig, GRPOTrainer
+from unsloth import FastLanguageModel, is_bfloat16_supported
+
 
 # ================ CONFIGURATION ================
 max_seq_length = 2048

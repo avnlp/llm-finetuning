@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from datasets import load_dataset
 
@@ -48,7 +48,9 @@ class Dataloader:
             raise ValueError(msg)
 
         try:
-            user_message = self.user_prompt.format(**{**self.user_message_inputs, **sample})
+            user_message = self.user_prompt.format(
+                **{**self.user_message_inputs, **sample}
+            )
         except KeyError as e:
             msg = f"Missing key in user_message_inputs or sample: {e}"
             raise ValueError(msg)

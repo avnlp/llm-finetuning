@@ -1,0 +1,41 @@
+model:
+  name: "unsloth/zephyr-sft-bnb-4bit"
+  max_seq_length: 4096
+  dtype: null
+  load_in_4bit: true
+
+dataset:
+  name: "HuggingFaceH4/ultrafeedback_binarized"
+  sample_percentage: 0.005
+  splits: ["train_prefs", "test_prefs"]
+  num_proc: 12
+
+lora:
+  r: 64
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+  lora_alpha: 64
+  lora_dropout: 0
+  bias: "none"
+  use_gradient_checkpointing: "unsloth"
+  random_state: 3407
+  use_rslora: false
+  loftq_config: null
+
+dpo:
+  beta: 0.1
+  max_length: 1024
+  max_prompt_length: 512
+
+training:
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  warmup_ratio: 0.1
+  num_train_epochs: 3
+  learning_rate: 5e-6
+  logging_steps: 1
+  optim: "adamw_8bit"
+  weight_decay: 0.0
+  lr_scheduler_type: "linear"
+  seed: 42
+  output_dir: "outputs"
+  report_to: "none"

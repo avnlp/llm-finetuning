@@ -1,20 +1,26 @@
-# This implementaion is based on the codefrom: https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Mistral_v0.3_(7B)-GRPO.ipynb
+# This implementation is based on the codefrom: https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Mistral_v0.3_(7B)-GRPO.ipynb
 # Dataset preprocessing for GSM8K is imported from the data_preprocessing.py file, and reward functions are imported from the rewards.py file.
 
-from unsloth import FastLanguageModel
-import torch
-import re
-from datasets import load_dataset, Dataset
-from unsloth import is_bfloat16_supported
-from trl import GRPOConfig, GRPOTrainer
+
+from datasets import Dataset, load_dataset
 from rewards import (
-    extract_xml_answer,
     correctness_reward_func_mistral as correctness_reward_func,
+)
+from rewards import (
     int_reward_func_mistral as int_reward_func,
-    strict_format_reward_func_mistral as strict_format_reward_func,
+)
+from rewards import (
     soft_format_reward_func_mistral as soft_format_reward_func,
+)
+from rewards import (
+    strict_format_reward_func_mistral as strict_format_reward_func,
+)
+from rewards import (
     xmlcount_reward_func_mistral as xmlcount_reward_func,
 )
+from trl import GRPOConfig, GRPOTrainer
+from unsloth import FastLanguageModel, is_bfloat16_supported
+
 
 # Mistral model configuration
 max_seq_length = 1024
@@ -69,18 +75,12 @@ def extract_hash_answer(text: str) -> str | None:
     return text.split("####")[1].strip()
 
 
+from data_preprocessing import format_gsm8k_dataset
+
+
 def get_gsm8k_questions(split="train") -> Dataset:
     data = load_dataset("openai/gsm8k", "main")[split]
-    data = data.map(
-        lambda x: {
-            "prompt": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": x["question"]},
-            ],
-            "answer": extract_hash_answer(x["answer"]),
-        }
-    )
-    return data
+    return format_gsm8k_dataset(data, SYSTEM_PROMPT)
 
 
 dataset = get_gsm8k_questions()
@@ -146,6 +146,7 @@ text = tokenizer.apply_chat_template(
 )
 
 from vllm import SamplingParams
+
 
 sampling_params = SamplingParams(
     temperature=0.8,

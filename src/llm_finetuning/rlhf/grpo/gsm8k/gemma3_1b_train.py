@@ -1,96 +1,140 @@
 # Code taken from https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Gemma3_(1B)-GRPO.ipynb
 # Dataset preprocessing for GSM8K is imported from the data_preprocessing.py file, and reward functions are imported from the rewards.py file.
 
-from unsloth import FastModel
-import torch
-from datasets import load_dataset
-from unsloth import is_bfloat16_supported
-from trl import GRPOConfig, GRPOTrainer
-from transformers import TextStreamer
+import yaml
 from data_preprocessing import (
     format_gsm8k_dataset,
-    get_tokenized_lengths,
     get_max_prompt_length,
+    get_tokenized_lengths,
 )
+from datasets import load_dataset
 from rewards import (
-    match_format_exactly,
-    match_format_approximately,
     check_answer,
     check_numbers,
+    match_format_approximately,
+    match_format_exactly,
 )
+from trl import GRPOConfig, GRPOTrainer
+from unsloth import FastModel, is_bfloat16_supported
 
-max_seq_length = 1024
-reasoning_start = "<start_working_out>"
-reasoning_end = "<end_working_out>"
-solution_start = "<SOLUTION>"
-solution_end = "</SOLUTION>"
 
-system_prompt = f"""You are given a problem.
-Think about the problem and provide your working out.
-Place it between {reasoning_start} and {reasoning_end}.
-Then, provide your solution between {solution_start}{solution_end}"""
+# Load configuration from YAML file
+with open("gemma3_1b_train.yaml") as f:
+    config = yaml.safe_load(f)
 
+# Extract configuration values
+model_config = config["model"]
+dataset_config = config["dataset"]
+training_config = config["training"]["config"]
+generation_config = config["training"]["generation"]
+reward_config = config["rewards"]
+output_config = config["output"]
+
+# Set special tokens from configuration
+system_prompt = dataset_config["preprocessing"]["system_prompt"]
+reasoning_start = dataset_config["preprocessing"]["special_tokens"]["reasoning_start"]
+reasoning_end = dataset_config["preprocessing"]["special_tokens"]["reasoning_end"]
+solution_start = dataset_config["preprocessing"]["special_tokens"]["solution_start"]
+solution_end = dataset_config["preprocessing"]["special_tokens"]["solution_end"]
+
+# Load model with configuration
 model, tokenizer = FastModel.from_pretrained(
-    model_name="unsloth/gemma-3-1b-it",
-    max_seq_length=max_seq_length,
-    load_in_4bit=False,
-    load_in_8bit=False,
+    model_name=model_config["name"],
+    max_seq_length=model_config["max_seq_length"],
+    load_in_4bit=model_config["quantization"]["load_in_4bit"],
+    load_in_8bit=model_config["quantization"]["load_in_8bit"],
     full_finetuning=False,
 )
 
+# Configure LoRA
 model = FastModel.get_peft_model(
     model,
     finetune_vision_layers=False,
     finetune_language_layers=True,
     finetune_attention_modules=True,
     finetune_mlp_modules=True,
-    r=8,
-    lora_alpha=8,
-    lora_dropout=0,
+    r=model_config["lora"]["r"],
+    lora_alpha=model_config["lora"]["alpha"],
+    lora_dropout=model_config["lora"]["dropout"],
     bias="none",
     random_state=3407,
 )
 
-dataset = load_dataset("openai/gsm8k", "main", split="train")
-dataset = format_gsm8k_dataset(dataset, system_prompt)
+# Load and prepare dataset
+dataset = load_dataset(
+    dataset_config["name"], dataset_config["config"], split=dataset_config["split"]
+)
+dataset = format_gsm8k_dataset(
+    dataset, system_prompt, reasoning_start, reasoning_end, solution_start, solution_end
+)
+
+# Calculate tokenized lengths
 tokenized_lengths = get_tokenized_lengths(dataset, tokenizer)
 max_prompt_length = get_max_prompt_length(tokenized_lengths)
 
+# Override generation config with calculated values if needed
+if generation_config["max_prompt_length"] == "auto":
+    generation_config["max_prompt_length"] = max_prompt_length
+if generation_config["max_completion_length"] == "auto":
+    generation_config["max_completion_length"] = (
+        model_config["max_seq_length"] - max_prompt_length
+    )
+
+# Map reward functions from names to actual functions
+REWARD_FUNCTIONS = {
+    "match_format_exactly": match_format_exactly,
+    "match_format_approximately": match_format_approximately,
+    "check_answer": check_answer,
+    "check_numbers": check_numbers,
+}
+
+reward_funcs = [REWARD_FUNCTIONS[name] for name in reward_config["functions"]]
+
+# Create GRPO configuration
 training_args = GRPOConfig(
-    learning_rate=5e-6,
+    learning_rate=training_config["learning_rate"],
     adam_beta1=0.9,
     adam_beta2=0.99,
-    weight_decay=0.1,
-    warmup_ratio=0.1,
-    lr_scheduler_type="cosine",
-    optim="adamw_torch_fused",
-    logging_steps=1,
-    per_device_train_batch_size=1,
-    bf16=is_bfloat16_supported(),
-    fp16=not is_bfloat16_supported(),
-    gradient_accumulation_steps=1,
-    num_generations=4,
-    max_prompt_length=max_prompt_length,
-    max_completion_length=max_seq_length - max_prompt_length,
-    max_steps=50,
-    save_steps=50,
-    max_grad_norm=0.1,
-    report_to="none",
-    output_dir="outputs",
+    weight_decay=training_config["weight_decay"],
+    warmup_ratio=training_config["warmup_ratio"],
+    lr_scheduler_type=training_config["lr_scheduler"],
+    optim=training_config["optim"],
+    logging_steps=training_config["logging_steps"],
+    per_device_train_batch_size=training_config["batch_size"],
+    bf16=is_bfloat16_supported() and training_config.get("bf16", False),
+    fp16=not is_bfloat16_supported() and training_config.get("fp16", True),
+    gradient_accumulation_steps=training_config["gradient_accumulation_steps"],
+    num_generations=generation_config["num_generations"],
+    max_prompt_length=generation_config["max_prompt_length"],
+    max_completion_length=generation_config["max_completion_length"],
+    max_steps=training_config["max_steps"],
+    save_steps=training_config["save_steps"],
+    max_grad_norm=training_config["max_grad_norm"],
+    report_to=training_config["report_to"],
+    output_dir=output_config["dir"],
+    # Generation parameters
+    temperature=generation_config["temperature"],
+    top_p=generation_config["top_p"],
+    max_new_tokens=generation_config["max_new_tokens"],
 )
 
+# Create trainer
 trainer = GRPOTrainer(
     model=model,
     processing_class=tokenizer,
-    reward_funcs=[
-        match_format_exactly,
-        match_format_approximately,
-        check_answer,
-        check_numbers,
-    ],
+    reward_funcs=reward_funcs,
     args=training_args,
     train_dataset=dataset,
 )
 
-print("Starting GRPO training...")
+print("Starting GRPO training with configuration:")
+print(f"Model: {model_config['name']}")
+print(f"Dataset: {dataset_config['name']} ({dataset_config['split']} split)")
+print(f"Batch size: {training_config['batch_size']}")
+print(f"Learning rate: {training_config['learning_rate']}")
+print(f"Reward functions: {', '.join(reward_config['functions'])}")
+print(f"Max steps: {training_config['max_steps']}")
+print(f"Output directory: {output_config['dir']}")
+
 trainer.train()
+print("Training completed!")

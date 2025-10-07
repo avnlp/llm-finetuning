@@ -1,18 +1,19 @@
 # Code taken from: https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Phi_4_(14B)-GRPO.ipynb
 # Dataset preprocessing for GSM8K is imported from the data_preprocessing.py file, and reward functions are imported from the rewards.py file.
-from unsloth import FastLanguageModel, is_bfloat16_supported
-import torch
 import re
+
 from datasets import load_dataset
-from trl import GRPOConfig, GRPOTrainer
-from vllm import SamplingParams
 from rewards import (
     correctness_reward_func,
     int_reward_func,
-    strict_format_reward_func,
     soft_format_reward_func,
+    strict_format_reward_func,
     xmlcount_reward_func,
 )
+from trl import GRPOConfig, GRPOTrainer
+from unsloth import FastLanguageModel, is_bfloat16_supported
+from vllm import SamplingParams
+
 
 # Configuration
 max_seq_length = 512
@@ -52,34 +53,16 @@ Respond in the following format:
 
 
 # Helper functions for answer extraction
-def extract_xml_answer(text: str) -> str:
-    """Extracts content between <answer> tags"""
-    answer = text.split("<answer>")[-1]
-    answer = answer.split("</answer>")[0]
-    return answer.strip()
-
-
-def extract_hash_answer(text: str) -> str | None:
-    """Extracts answer after #### marker in GSM8K dataset"""
-    if "####" not in text:
-        return None
-    return text.split("####")[1].strip()
 
 
 # Dataset loader for GSM8K
+from data_preprocessing import extract_xml_answer, format_gsm8k_dataset
+
+
 def get_gsm8k_questions(split="train"):
-    """Loads and preprocesses GSM8K dataset"""
+    """Loads and preprocesses GSM8K dataset using shared preprocessing."""
     data = load_dataset("openai/gsm8k", "main")[split]
-    data = data.map(
-        lambda x: {
-            "prompt": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": x["question"]},
-            ],
-            "answer": extract_hash_answer(x["answer"]),
-        }
-    )
-    return data
+    return format_gsm8k_dataset(data, SYSTEM_PROMPT)
 
 
 # Load training dataset
@@ -90,7 +73,7 @@ dataset = get_gsm8k_questions()
 # 4. REWARD FUNCTIONS
 # =====================
 def correctness_reward_func(prompts, completions, answer, **kwargs) -> list[float]:
-    """Rewards correct final answers (2.0 points)"""
+    """Rewards correct final answers (2.0 points)."""
     responses = [completion[0]["content"] for completion in completions]
     q = prompts[0][-1]["content"]
     extracted_responses = [extract_xml_answer(r) for r in responses]
@@ -105,14 +88,14 @@ def correctness_reward_func(prompts, completions, answer, **kwargs) -> list[floa
 
 
 def int_reward_func(completions, **kwargs) -> list[float]:
-    """Rewards integer answers (0.5 points)"""
+    """Rewards integer answers (0.5 points)."""
     responses = [completion[0]["content"] for completion in completions]
     extracted_responses = [extract_xml_answer(r) for r in responses]
     return [0.5 if r.isdigit() else 0.0 for r in extracted_responses]
 
 
 def strict_format_reward_func(completions, **kwargs) -> list[float]:
-    """Strict XML format validation (0.5 points)"""
+    """Strict XML format validation (0.5 points)."""
     pattern = r"^<reasoning>\n.*?\n</reasoning>\n<answer>\n.*?\n</answer>\n$"
     responses = [completion[0]["content"] for completion in completions]
     matches = [re.match(pattern, r) for r in responses]
@@ -120,7 +103,7 @@ def strict_format_reward_func(completions, **kwargs) -> list[float]:
 
 
 def soft_format_reward_func(completions, **kwargs) -> list[float]:
-    """Lenient XML format validation (0.5 points)"""
+    """Lenient XML format validation (0.5 points)."""
     pattern = r"<reasoning>.*?</reasoning>\s*<answer>.*?</answer>"
     responses = [completion[0]["content"] for completion in completions]
     matches = [re.match(pattern, r) for r in responses]
@@ -128,7 +111,7 @@ def soft_format_reward_func(completions, **kwargs) -> list[float]:
 
 
 def xmlcount_reward_func(completions, **kwargs) -> list[float]:
-    """Detailed XML structure scoring (variable points)"""
+    """Detailed XML structure scoring (variable points)."""
 
     def count_xml(text) -> float:
         count = 0.0

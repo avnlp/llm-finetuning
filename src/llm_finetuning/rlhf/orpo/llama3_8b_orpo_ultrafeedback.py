@@ -1,13 +1,11 @@
 # The code is taken from https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Llama3_(8B)-ORPO.ipynb
 # The code has been rewritten to work with the UltraFeedback dataset.
 
-from unsloth import FastLanguageModel
-import torch
+import numpy as np
 from datasets import load_dataset
 from trl import ORPOConfig, ORPOTrainer
-from unsloth import PatchDPOTrainer
-import numpy as np
-from transformers import TextStreamer
+from unsloth import FastLanguageModel, PatchDPOTrainer
+
 
 max_seq_length = 4096
 dtype = None
@@ -25,7 +23,15 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 model = FastLanguageModel.get_peft_model(
     model,
     r=16,
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    target_modules=[
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+    ],
     lora_alpha=16,
     lora_dropout=0,
     bias="none",
@@ -106,19 +112,3 @@ orpo_trainer = ORPOTrainer(
 )
 
 orpo_trainer.train()
-
-# Inference example (same as before)
-FastLanguageModel.for_inference(model)
-inputs = tokenizer(
-    [
-        alpaca_prompt.format(
-            "Continue the fibonnaci sequence.",
-            "1, 1, 2, 3, 5, 8",
-            "",
-        )
-    ],
-    return_tensors="pt",
-).to("cuda")
-
-text_streamer = TextStreamer(tokenizer)
-_ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=128)

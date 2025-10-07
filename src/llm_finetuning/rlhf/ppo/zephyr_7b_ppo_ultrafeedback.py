@@ -1,9 +1,9 @@
-from unsloth import FastLanguageModel
 import torch
 from datasets import load_dataset
-from trl import PPOTrainer, PPOConfig, AutoModelForCausalLMWithValueHead
-from transformers import TrainingArguments, TextStreamer, AutoTokenizer, pipeline
-import numpy as np
+from transformers import AutoTokenizer, TextStreamer, pipeline
+from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer
+from unsloth import FastLanguageModel
+
 
 # Model configuration
 max_seq_length = 4096
@@ -22,7 +22,15 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 model = FastLanguageModel.get_peft_model(
     model,
     r=64,
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    target_modules=[
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+    ],
     lora_alpha=64,
     lora_dropout=0,
     bias="none",
@@ -34,38 +42,45 @@ model = FastLanguageModel.get_peft_model(
 model = AutoModelForCausalLMWithValueHead.from_pretrained(model)
 
 # Load reward model
-reward_tokenizer = AutoTokenizer.from_pretrained("OpenAssistant/reward-model-deberta-v3-large-v2")
+reward_tokenizer = AutoTokenizer.from_pretrained(
+    "OpenAssistant/reward-model-deberta-v3-large-v2"
+)
 reward_model = pipeline(
     "text-classification",
     model="OpenAssistant/reward-model-deberta-v3-large-v2",
     device=model.pretrained_model.device,
 )
 
+
 # New function to process UltraFeedback dataset for PPO
 def process_ultra_feedback_for_ppo(sample):
     instruction = sample["instruction"]
     return {"prompt": instruction}
 
+
 # Load and process dataset
 dataset = load_dataset("openbmb/UltraFeedback", split="train")
-dataset = dataset.map(process_ultra_feedback_for_ppo, remove_columns=dataset.column_names)
+dataset = dataset.map(
+    process_ultra_feedback_for_ppo, remove_columns=dataset.column_names
+)
 
 # Sample 0.5% of the dataset
 dataset = dataset.train_test_split(test_size=0.995, seed=42)["train"]
+
 
 # Apply Zephyr chat template to prompts
 def format_prompt(example):
     system_message = {"role": "system", "content": ""}
     user_message = {"role": "user", "content": example["prompt"]}
-    
+
     formatted_prompt = tokenizer.apply_chat_template(
-        [system_message, user_message],
-        tokenize=False,
-        add_generation_prompt=True
+        [system_message, user_message], tokenize=False, add_generation_prompt=True
     )
     return {"prompt": formatted_prompt}
 
+
 dataset = dataset.map(format_prompt)
+
 
 # Reward function using the reward model
 def reward_function(samples, responses, **kwargs):
@@ -73,18 +88,19 @@ def reward_function(samples, responses, **kwargs):
     for prompt, response in zip(samples, responses):
         # Combine prompt and response
         text = prompt + response
-        
+
         # Get reward score (convert to float)
         reward_output = reward_model(text, truncation=True, max_length=1024)[0]
-        score = reward_output['score'] 
-        
+        score = reward_output["score"]
+
         # Convert to reward: positive if label is "1" (good), negative otherwise
-        if reward_output['label'] == '1':
+        if reward_output["label"] == "1":
             rewards.append(torch.tensor(score))
         else:
             rewards.append(torch.tensor(-score))
-    
+
     return rewards
+
 
 # PPO Training Configuration
 ppo_config = PPOConfig(
@@ -105,10 +121,10 @@ ppo_trainer = PPOTrainer(
 )
 
 # Training loop
-for epoch in range(3):  
+for _epoch in range(3):
     for batch in ppo_trainer.dataloader:
         prompts = batch["prompt"]
-        
+
         # Generate responses
         response_tensors = []
         for prompt in prompts:
@@ -119,17 +135,13 @@ for epoch in range(3):
                 pad_token_id=tokenizer.eos_token_id,
             )
             response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-            response_tensors.append(response[len(prompt):])  # Remove prompt
-        
+            response_tensors.append(response[len(prompt) :])  # Remove prompt
+
         # Compute rewards
         rewards = reward_function(prompts, response_tensors)
-        
+
         # Train with PPO
-        stats = ppo_trainer.step(
-            prompts,
-            response_tensors,
-            rewards
-        )
+        stats = ppo_trainer.step(prompts, response_tensors, rewards)
         ppo_trainer.log_stats(stats, batch, rewards)
 
 # Save the trained model
@@ -138,7 +150,9 @@ model.save_pretrained("zephyr-ppo-ultrafeedback")
 # Inference example
 FastLanguageModel.for_inference(model)
 prompt = "Explain quantum computing in simple terms"
-inputs = tokenizer([f"<|system|>\n</s>\n<|user|>\n{prompt}</s>\n<|assistant|>\n"], return_tensors="pt").to("cuda")
+inputs = tokenizer(
+    [f"<|system|>\n</s>\n<|user|>\n{prompt}</s>\n<|assistant|>\n"], return_tensors="pt"
+).to("cuda")
 
 text_streamer = TextStreamer(tokenizer)
 _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=256)

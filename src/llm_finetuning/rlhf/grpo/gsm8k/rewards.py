@@ -5,7 +5,7 @@ import re
 # llama-3 reward functions
 # ================================
 def extract_xml_answer(text: str) -> str:
-    """Extracts content between <answer> tags"""
+    """Extracts content between <answer> tags."""
     if "<answer>" not in text:
         return ""
     answer = text.split("<answer>")[-1]
@@ -69,7 +69,9 @@ def xmlcount_reward_func(completions, **kwargs) -> list[float]:
 # ================================
 # mistral reward functions
 # ================================
-def correctness_reward_func_mistral(prompts, completions, answer, **kwargs) -> list[float]:
+def correctness_reward_func_mistral(
+    prompts, completions, answer, **kwargs
+) -> list[float]:
     responses = [completion[0]["content"] for completion in completions]
     extracted_responses = [extract_xml_answer(r) for r in responses]
     return [2.0 if r == a else 0.0 for r, a in zip(extracted_responses, answer)]
@@ -133,7 +135,9 @@ def xmlcount_reward_func_phi(completions, **kwargs) -> list[float]:
 # ================================
 # gemma3 reward functions
 # ================================
-def correctness_reward_func_gemma(prompts, completions, answer, **kwargs) -> list[float]:
+def correctness_reward_func_gemma(
+    prompts, completions, answer, **kwargs
+) -> list[float]:
     responses = [completion[0]["content"] for completion in completions]
     extracted_responses = [extract_xml_answer(r) for r in responses]
     return [2.0 if r == a else 0.0 for r, a in zip(extracted_responses, answer)]

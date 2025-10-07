@@ -1,0 +1,27 @@
+# Milvus connection
+milvus_uri: "https://in03-43d4c91b8d48e8f.serverless.aws-eu-central-1.cloud.zilliz.com"
+milvus_token: "a57d4607d6dc4810c9c626c83eb45390fcdff335ba1c2990fd3f6a8a369e549d493217f8a454d7b7446782e8a357e7f986571a02"
+collection_name: "medqa_textbooks"
+
+# Model parameters
+model_name: "Qwen/Qwen3-Embedding-0.6B"
+padding_side: "left"
+
+# Dataset parameters
+input_hf_dataset_name: "awinml/medqa"
+output_hf_dataset_name: "awinml/medqa-context"
+hf_private: false
+
+# Field names
+question_field: "question"
+context_bm25_field: "context_bm25"
+context_qwen_embed_field: "context_qwen_embed"
+
+# Retrieval parameters
+top_k: 10
+batch_size: 32
+
+# Split names
+train_split_name: "train"
+validation_split_name: "validation"
+test_split_name: "test"

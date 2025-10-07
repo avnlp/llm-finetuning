@@ -1,0 +1,23 @@
+# Model configuration
+model:
+  name: "unsloth/Qwen3-8B-unsloth-bnb-4bit"
+  max_seq_length: 8192
+  lora_rank: 64
+  gpu_memory_utilization: 0.8
+
+# Generation parameters
+generation:
+  temperature: 0.7
+  top_k: 40
+  top_p: 0.9
+  min_p: 0.1
+  max_new_tokens: 1024
+
+# Dataset configuration
+dataset:
+  name: "qiaojin/BioASQ"
+  split: "validation"
+
+# Output configuration
+output:
+  file_name: "generations_bioasq_qwen3_8b.jsonl"

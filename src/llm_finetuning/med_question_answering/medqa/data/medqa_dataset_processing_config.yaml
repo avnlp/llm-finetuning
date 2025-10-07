@@ -1,0 +1,13 @@
+# File paths
+train_file: "questions/US/4_options/phrases_no_exclude_train.jsonl"
+dev_file: "questions/US/4_options/phrases_no_exclude_dev.jsonl"
+test_file: "questions/US/4_options/phrases_no_exclude_test.jsonl"
+
+# Dataset parameters
+hf_dataset_name: "awinml/medqa"
+hf_private: false
+
+# Split names
+train_split_name: "train"
+validation_split_name: "validation"
+test_split_name: "test"

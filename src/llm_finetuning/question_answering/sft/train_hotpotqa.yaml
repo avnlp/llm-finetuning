@@ -1,0 +1,31 @@
+# File: train_config.yaml
+model:
+  name: "unsloth/Llama-3.2-3B-Instruct-bnb-4bit"
+  max_seq_length: 4096
+  quantization:
+    load_in_4bit: true
+  special_tokens:
+    - "<|start_header_id|>"
+    - "<|end_header_id|>"
+    - "<|eot_id|>"
+
+dataset:
+  name: "varun500/hotpotqa-processed"
+  text_field: "text"
+  split: "train"
+
+training:
+  output_dir: "./unsloth_sft_hotpotqa"
+  batch_size: 4
+  gradient_accumulation_steps: 2
+  warmup_ratio: 0.1
+  logging_steps: 10
+  save_steps: 100
+  learning_rate: 2e-5
+  weight_decay: 0.01
+  lr_scheduler: "cosine"
+  num_train_epochs: 1
+  max_steps: 300
+  neftune_noise_alpha: 5
+  packing: false
+  remove_unused_columns: false

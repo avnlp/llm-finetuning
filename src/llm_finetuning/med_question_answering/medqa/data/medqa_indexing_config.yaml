@@ -1,0 +1,44 @@
+# Milvus connection
+milvus_uri: "https://in03-43d4c91b8d48e8f.serverless.aws-eu-central-1.cloud.zilliz.com"
+milvus_token: "a57d4607d6dc4810c9c626c83eb45390fcdff335ba1c2990fd3f6a8a369e549d493217f8a454d7b7446782e8a357e7f986571a02"
+collection_name: "medqa_textbooks"
+
+# Schema fields
+id_field: "id"
+file_name_field: "file_name"
+content_field: "content"
+sparse_vector_field: "sparse_vector"
+dense_vector_field: "dense_vector"
+metadata_field: "metadata"
+
+# Field parameters
+id_max_length: 1000
+file_name_max_length: 2550
+content_max_length: 65535
+dense_vector_dim: 1024
+
+# Analyzer parameters
+tokenizer: "standard"
+filters: ["lowercase"]
+
+# Index parameters
+sparse_index_type: "SPARSE_INVERTED_INDEX"
+sparse_metric_type: "BM25"
+dense_index_type: "FLAT"
+dense_metric_type: "IP"
+
+# BM25 function
+bm25_function_name: "bm25"
+bm25_function_type: "BM25"
+
+# Model parameters
+model_name: "Qwen/Qwen3-Embedding-0.6B"
+padding_side: "left"
+
+# Processing parameters
+batch_size: 256
+target_devices: ["cuda:0", "cuda:1"]
+
+# Dataset parameters
+hf_dataset_name: "awinml/medqa-textbooks-chunked"
+dataset_split: "train"
