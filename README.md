@@ -1,11 +1,15 @@
 # LLM Finetuning
 
-- Fine-tuned models for RAG with Reasoning on HotpotQA, FreshQA, and Musique datasets using QLoRA and GRPO on Llama3.2-3B, implementing four correctness reward functions - DeepEval's GEval with custom LLM-as-a-Judge for RAG, Summarization, Answer Relevancy, and Evidently AI's CorrectnessLLMEval and four format reward functions to enforce '<reasoning>' tags and multiline response compliance.
+----------------------------------------------------------------------------------------
+
+[![code checks](https://github.com/avnlp/llm-finetuning/actions/workflows/code_checks.yml/badge.svg)](https://github.com/avnlp/llm-finetuning/actions/workflows/code_checks.yml)
+![GitHub License](https://img.shields.io/github/license/avnlp/llm-finetuning)
+
+- Fine-tuned models for RAG with Reasoning on HotpotQA, FreshQA, and Musique datasets using QLoRA and GRPO on Llama3.2-3B, implementing four correctness reward functions - DeepEval's GEval with custom LLM-as-a-Judge for RAG, Summarization, Answer Relevancy, and Evidently AI's CorrectnessLLMEval and four format reward functions to enforce 'reasoning' tags and multiline response compliance.
 - Fine-tuned models for Math Reasoning on GSM8K using QLoRA and GRPO on Phi-4, Mistral-7B, Llama3.2-3B, Llama3.1-8B, and Gemma3-1B to generate step-by-step solutions, applying one correctness reward function and four format reward functions for 'reasoning' tags and multiline structure.
 - Fine-tuned three models for Preference Alignment on UltraFeedback dataset using QLoRA: Zephyr-7B using DPO, Qwen2.5-1.5B via KTO, and Llama-3-8B via DPO, ORPO, and PPO (using LLM-Blender PairRM as reward model).
 - Fine-tuned model for Question-Answering Preference Alignment on the WebGPT comparisons dataset using QLoRA with DPO and PPO (using LLM-Blender PairRM as reward model) on Llama-3-8B.
 - Fine-tuned models for Adapter-based Supervised Fine-tuning using QLoRA, LoRA, DoRA, P-Tuning, and Prefix-Tuning on the ARC, Earnings Call, FactScore, PopQA, and TriviaQA datasets. Compared the performance of different adapter based supervised fine-tuning techniques.
-
 
 <br>
 <img src="plots/llm_training.png" alt="LLM Training" align="middle" height=500>
@@ -50,3 +54,31 @@ learning from human feedback (RLHF)  can be used.
 - Human feedback, collected as ranked outputs or pairwise preferences, is used to train a reward model that scores outputs based on their alignment with human values. The policy (model) is then optimized offline to maximize these reward scores without interacting with a live environment.
 - To maintain stability, ORPO incorporates regularization techniques, such as KL divergence constraints, ensuring the fine-tuned model stays close to the original while aligning with human preferences. By avoiding the complexities of online interaction and exploration, ORPO is resource-efficient and scalable, making it suitable for applications with static datasets.
 - However, its reliance on the quality of the dataset and reward model, along with limited exploration capabilities, are key limitations. ORPO provides a stable and efficient alternative to online reinforcement learning methods like PPO, particularly for tasks where human feedback is available but active exploration is unnecessary or impractical.
+
+## Developing
+
+### Installing dependencies
+
+The development environment can be set up using
+[uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation). Hence, make sure it is
+installed and then run:
+
+```bash
+uv sync
+source .venv/bin/activate
+```
+
+In order to install dependencies for testing (codestyle, unit tests, integration tests),
+run:
+
+```bash
+uv sync --dev
+source .venv/bin/activate
+```
+
+In order to exclude installation of packages from a specific group (e.g. docs),
+run:
+
+```bash
+uv sync --no-group docs
+```
