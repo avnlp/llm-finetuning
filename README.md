@@ -2,7 +2,6 @@
 
 ----------------------------------------------------------------------------------------
 
-[![code checks](https://github.com/avnlp/llm-finetuning/actions/workflows/code_checks.yml/badge.svg)](https://github.com/avnlp/llm-finetuning/actions/workflows/code_checks.yml)
 ![GitHub License](https://img.shields.io/github/license/avnlp/llm-finetuning)
 
 - Fine-tuned models for RAG with Reasoning on HotpotQA, FreshQA, and Musique datasets using QLoRA and GRPO on Llama3.2-3B, implementing four correctness reward functions - DeepEval's GEval with custom LLM-as-a-Judge for RAG, Summarization, Answer Relevancy, and Evidently AI's CorrectnessLLMEval and four format reward functions to enforce 'reasoning' tags and multiline response compliance.
