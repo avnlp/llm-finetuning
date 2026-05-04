@@ -1,6 +1,6 @@
-# Contributing to llm-finetuning
+# Contributing to LLM Fine-tuning
 
-Thanks for your interest in contributing to the llm-finetuning!
+Thanks for your interest in contributing to the LLM Fine-tuning!
 
 To submit PRs, please fill out the PR template along with the PR. If the PR
 fixes an issue, don't forget to link the PR to the issue!
@@ -25,6 +25,36 @@ Once the python virtual environment is setup, you can run pre-commit hooks using
 
 ```bash
 pre-commit run --all-files
+```
+
+## Make Commands
+
+The project includes a Makefile with common development tasks. Run `make help` to see all available targets.
+
+### Linting and Formatting
+
+```bash
+make lint-fmt         # Format code and auto-fix lint issues
+make lint-check       # Check formatting and lint without modifying files
+make lint-style       # Lint with ruff (check only)
+make lint-typing      # Type check with mypy
+make lint-typos       # Check for typos
+make lint-all         # Format, lint, and type check
+```
+
+### Security
+
+```bash
+make security-bandit  # Run Bandit security scan
+make security-audit   # Run pip-audit dependency vulnerability scan
+make security         # Run all security scans
+```
+
+### Other
+
+```bash
+make sync             # Sync project and install dependencies
+make clean            # Clean build artifacts and caches
 ```
 
 ## Coding guidelines

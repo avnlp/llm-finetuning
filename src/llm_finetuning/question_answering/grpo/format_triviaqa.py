@@ -1,3 +1,7 @@
+"""Format and preprocess TriviaQA dataset for training."""
+
+from typing import Any, Dict
+
 from datasets import DatasetDict, load_dataset
 
 
@@ -6,7 +10,8 @@ print("Loading TriviaQA dataset...")
 dataset = load_dataset("mandarjoshi/trivia_qa", "rc.web")
 
 
-def format_dataset(example):
+def format_dataset(example: Dict[str, Any]) -> Dict[str, Any]:
+    """Format TriviaQA example with context and normalized answer."""
     example["context"] = " ".join(
         "\n".join(example["search_results"]["search_context"]).split("\n")
     )
@@ -60,18 +65,3 @@ subset_dataset = DatasetDict(
         "validation": validation_filtered_dataset_context,
     }
 )
-
-# from huggingface_hub import notebook_login
-# notebook_login()
-
-DATASET_NAME = "awinml/triviaqa_processed"
-HF_TOKEN = ("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",)
-
-# Print dataset information
-print("\nSubset dataset structure:")
-for split_name, split_data in subset_dataset.items():
-    print(f"{split_name}: {len(split_data)} examples")
-
-print(f"\nPushing dataset to {DATASET_NAME}...")
-subset_dataset.push_to_hub(DATASET_NAME, private=False)
-print(f"Successfully pushed to https://huggingface.co/datasets/{DATASET_NAME}")

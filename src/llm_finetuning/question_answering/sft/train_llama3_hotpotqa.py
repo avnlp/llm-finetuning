@@ -1,9 +1,11 @@
+"""Training script for HotPotQA model."""
+
 import torch
 import yaml
 from datasets import load_dataset
 from transformers import TrainingArguments
 from trl import SFTTrainer
-from unsloth import FastLanguageModel
+from unsloth import FastLanguageModel  # type: ignore[import-untyped]
 
 
 # Load configuration from YAML file

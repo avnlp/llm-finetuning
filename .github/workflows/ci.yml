@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  schedule:
+    - cron: "30 1 * * *"
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+  FORCE_COLOR: "1"
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+          cache-suffix: "py310"
+          save-cache: true
+
+      - name: Install dependencies
+        run: make sync
+
+      - name: Lint & format check
+        run: make lint-check
+
+      - name: Type check
+        run: make lint-typing
+
+      - name: Typos check
+        run: make lint-typos
+
+  security-scan:
+    name: Security Scanning
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+          cache-suffix: "py310"
+          save-cache: false
+
+      - name: Install dependencies
+        run: make sync
+
+      - name: Run Bandit security scan
+        run: make security-bandit
+        continue-on-error: true
+
+      - name: Run pip-audit
+        run: make security-audit
+        continue-on-error: true
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Generate Bandit JSON report
+        if: always()
+        run: uv run bandit -c pyproject.toml -r src/ -f json -o bandit-report.json || true
+
+      - name: Upload Bandit results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+          retention-days: 30

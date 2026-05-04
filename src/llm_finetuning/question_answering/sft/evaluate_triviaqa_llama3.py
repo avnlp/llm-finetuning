@@ -1,15 +1,16 @@
-# File: evaluate_triviaqa.py
+"""Evaluation script for TriviaQA model."""
+
 import json
 import os
 import time
 
-import evaluate
+import evaluate  # type: ignore[import-not-found]
 import numpy as np
 import torch
 from datasets import load_dataset
 from tqdm import tqdm
 from transformers import GenerationConfig
-from unsloth import FastLanguageModel
+from unsloth import FastLanguageModel  # type: ignore[import-untyped]
 
 
 # Configuration
@@ -53,7 +54,7 @@ test_dataset = dataset[TEST_SPLIT]
 
 
 # Evaluation function
-def evaluate_qa(model, tokenizer, dataset, max_new_tokens=100):
+def evaluate_qa(model, tokenizer, dataset, max_new_tokens=100) -> dict:  # type: ignore[no-untyped-def]
     """Evaluate QA performance on TriviaQA dataset."""
     # Load metrics
     exact_match_metric = evaluate.load("exact_match")
@@ -70,7 +71,7 @@ def evaluate_qa(model, tokenizer, dataset, max_new_tokens=100):
     )
 
     # Formatting template for evaluation
-    def format_eval_prompt(example):
+    def format_eval_prompt(example):  # type: ignore[no-untyped-def]
         return (
             f"<|start_header_id|>user<|end_header_id|>\n\n"
             f"Answer the question based on the context below. Keep your response concise.\n\n"
@@ -86,7 +87,7 @@ def evaluate_qa(model, tokenizer, dataset, max_new_tokens=100):
 
     for example in tqdm(test_dataset, desc="Evaluating"):
         # Format input
-        input_text = format_eval_prompt(example)
+        input_text = format_eval_prompt(example)  # type: ignore[no-untyped-call]
         inputs = tokenizer(
             input_text, return_tensors="pt", truncation=True, max_length=MAX_SEQ_LENGTH
         ).to("cuda")
@@ -149,7 +150,7 @@ def evaluate_qa(model, tokenizer, dataset, max_new_tokens=100):
         recall = len(common_tokens) / len(ref_tokens) if len(ref_tokens) > 0 else 0
 
         if precision + recall == 0:
-            f1 = 0
+            f1 = 0.0
         else:
             f1 = 2 * (precision * recall) / (precision + recall)
         f1_scores.append(f1)
@@ -188,7 +189,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     print("\nStarting evaluation...")
-    eval_results = evaluate_qa(model, tokenizer, test_dataset)
+    eval_results = evaluate_qa(model, tokenizer, test_dataset)  # type: ignore[no-untyped-call]
 
     # Print results
     print("\n" + "=" * 50)

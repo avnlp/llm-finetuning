@@ -1,15 +1,14 @@
 """Evaluation Metrics for BioASQ generations.
 
-This module provides evaluation framework for BioASQ outputs that follow a specific XML structure
-with answer and item tags for factoid/list questions.
+This module provides evaluation framework for BioASQ outputs with XML structure
+containing answer and item tags for factoid/list questions.
 
 The evaluation includes:
 1. XML structural integrity checks
-2. Answer correctness using fuzzy matching and LLM-as-a-judge metrics
+2. Answer correctness using fuzzy matching and LLM-as-judge metrics
 3. Traditional information retrieval metrics (F1, Precision, Recall)
 
-The generations contain these required XML tags:
-<answer>, <item>
+Required XML tags: <answer>, <item>
 """
 
 import re
@@ -89,9 +88,9 @@ class BioASQEvaluator:
     def evaluate_list_correctness(
         self, predicted_items: List[str], expected_items: List[str]
     ) -> Dict[str, float]:
-        """Evaluate correctness of predicted items against expected items using fuzzy matching.
+        """Evaluate predicted items against expected using fuzzy matching.
 
-        Uses F1, precision, and recall metrics adapted for list answers.
+        Uses F1, precision, and recall adapted for list answers.
         """
         if not expected_items:
             return {"f1": 0.0, "precision": 0.0, "recall": 0.0}

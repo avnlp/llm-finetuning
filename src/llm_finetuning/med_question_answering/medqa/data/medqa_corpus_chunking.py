@@ -1,11 +1,13 @@
+"""Chunk MedQA corpus text files."""
+
 from pathlib import Path
 
 import yaml
-from config import MedQACorpusChunkingConfig
-from medqa_corpus_chunker import MedQACorpusChunker
+from config import MedQACorpusChunkingConfig  # type: ignore[import-not-found]
+from medqa_corpus_chunker import MedQACorpusChunker  # type: ignore[import-not-found]
 
 
-def main(config_path: str):
+def main(config_path: str) -> None:
     """Run the MedQA corpus chunking process."""
     # Load configuration
     config_file = Path(config_path)

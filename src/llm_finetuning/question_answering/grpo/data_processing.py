@@ -1,4 +1,10 @@
-def format_hotpot_context(example):
+"""Data processing functions for HotpotQA and MuSiQUE datasets."""
+
+from typing import Any, Dict, List
+
+
+def format_hotpot_context(example: Dict[str, Any]) -> str:
+    """Format HotpotQA context into a single string."""
     titles = example["context"]["title"]
     sentences = example["context"]["sentences"]
     return " ".join(
@@ -6,9 +12,10 @@ def format_hotpot_context(example):
     )
 
 
-def preprocess_hotpot(examples):
-    inputs = [
-        f"Question: {q}\nContext: {format_hotpot_context(ex)}\nAnswer:"
+def preprocess_hotpot(examples: Dict[str, List[Any]]) -> Dict[str, List[Any]]:
+    """Preprocess HotpotQA examples for GRPO training."""
+    inputs = [  # type: ignore[no-untyped-call]
+        f"Question: {q}\nContext: {format_hotpot_context(ex)}\nAnswer:"  # type: ignore[arg-type]
         for q, ex in zip(examples["question"], examples)
     ]
     groups = [
@@ -18,13 +25,15 @@ def preprocess_hotpot(examples):
     return {"query": inputs, "answer": examples["answer"], "group": groups}
 
 
-def format_musique_context(example):
+def format_musique_context(example: Dict[str, Any]) -> str:
+    """Format MuSiQUE context from paragraphs."""
     return "\n".join(example["paragraphs"])
 
 
-def preprocess_musique(examples):
-    inputs = [
-        f"Question: {q}\nContext: {format_musique_context(ex)}\nAnswer:"
+def preprocess_musique(examples: Dict[str, List[Any]]) -> Dict[str, List[Any]]:
+    """Preprocess MuSiQUE examples for GRPO training."""
+    inputs = [  # type: ignore[no-untyped-call]
+        f"Question: {q}\nContext: {format_musique_context(ex)}\nAnswer:"  # type: ignore[arg-type]
         for q, ex in zip(examples["question"], examples)
     ]
     groups = [

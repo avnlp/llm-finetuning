@@ -1,8 +1,10 @@
+"""GRPO training script for Llama3 on HotpotQA dataset."""
+
 import torch
 import yaml
-from data_processing import preprocess_hotpot
+from data_processing import preprocess_hotpot  # type: ignore[import-not-found]
 from datasets import load_dataset
-from rewards import compute_hotpot_reward
+from rewards import compute_hotpot_reward  # type: ignore[import-not-found]
 from transformers import AutoTokenizer, TrainingArguments
 from trl import AutoModelForCausalLMWithValueHead, GRPOConfig, GRPOTrainer
 
@@ -28,7 +30,8 @@ dataset = dataset.map(
 )
 
 
-def reward_func(prompts, completions, answers, group, **kwargs):
+def reward_func(prompts, completions, answers, group, **kwargs):  # type: ignore[no-untyped-def]
+    """Compute reward scores using HotpotQA ground truth."""
     return [compute_hotpot_reward(pred, g) for pred, g in zip(completions, group)]
 
 
@@ -94,7 +97,7 @@ for epoch, batch in enumerate(grpo_trainer.dataloader):
     )
     completions = tokenizer.batch_decode(out, skip_special_tokens=True)
 
-    reward_list = reward_func(
+    reward_list = reward_func(  # type: ignore[no-untyped-call]
         prompts=queries, completions=completions, answers=answers, group=groups
     )
     rewards = [

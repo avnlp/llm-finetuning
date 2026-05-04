@@ -1,11 +1,19 @@
-# The code is based on the implementation from: https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Zephyr_(7B)-DPO.ipynb
-# The code has been modified work with the Qwen3-4B model and has been written to load training arguments from a YAML config file.
-# Zephyr specific dataset and prompt formatting has been removed. The appropriate formatting is done in the process_ultrafeedback.py file. The code is LLM agnostic and the correct chat_template is selected based on the model name.
+"""DPO training script using UltraFeedback dataset.
+
+Based on Unsloth's Zephyr DPO implementation, modified for Qwen3-4B and YAML config.
+"""
+# type: ignore[import-not-found, misc]
+
+# Based on: https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Zephyr_(7B)-DPO.ipynb
+# Modified to work with Qwen3-4B, load args from YAML, and support any model.
 
 import yaml
-from dpo_process_ultrafeedback import apply_chat_template_example, get_datasets
+from dpo_process_ultrafeedback import (  # type: ignore[import-not-found]
+    apply_chat_template_example,
+    get_datasets,
+)
 from trl import DPOConfig, DPOTrainer
-from unsloth import FastLanguageModel, PatchDPOTrainer
+from unsloth import FastLanguageModel, PatchDPOTrainer  # type: ignore[import-untyped]
 
 
 # Load configuration from YAML

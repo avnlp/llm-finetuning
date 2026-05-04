@@ -1,8 +1,8 @@
 """Reward Functions for MedQA.
 
 We use 2 reward functions for training MedQA:
-- Correctness reward function: Measures the correctness of the model's answer.
-- XML structure reward function: Checks presence of all new tags in the model's answer.
+- Correctness reward: Measures answer correctness
+- XML structure reward: Checks tag presence in model answer
 """
 
 import re
@@ -70,18 +70,18 @@ class RewardManager:
     def evaluate_answer_correctness(
         question: str, answer: str, expected_answer: str
     ) -> float:
-        """Evaluate answer correctness using DeepEval LLM-as-a-Judge metric.
+        """Evaluate answer correctness using DeepEval LLM-as-judge.
 
-        Utilizes GEval with criteria: "Determine if the actual output is factually correct
-        based on expected output and context". Implements exponential backoff for retries.
+        Uses GEval to check if output is factually correct based on expected
+        output and context. Implements exponential backoff for retries.
 
         Args:
-            question: User query/instruction given to model
+            question: User query given to model
             answer: Model-generated response
             expected_answer: Ground truth reference answer
 
         Returns:
-            Normalized correctness score between 0.0 (incorrect) and 1.0 (perfect)
+            Correctness score between 0.0 (incorrect) and 1.0 (perfect)
         """
         test_case = LLMTestCase(
             input=question, actual_output=answer, expected_output=expected_answer
@@ -100,8 +100,8 @@ class RewardManager:
         return correctness_metric.score
 
     @staticmethod
-    def correctness_reward_func(
-        completions, instruction, answer, **kwargs
+    def correctness_reward_func(  # type: ignore[no-untyped-def]
+        completions: list, instruction: str, answer: str, **kwargs
     ) -> list[float]:
         """Reward function that evaluates answer correctness.
 
@@ -129,7 +129,7 @@ class RewardManager:
         return scores
 
     @staticmethod
-    def xml_structure_reward_func(completions, **kwargs) -> list[float]:
+    def xml_structure_reward_func(completions: list, **kwargs) -> list[float]:  # type: ignore[no-untyped-def]
         """Reward function that evaluates XML structure compliance.
 
         Args:

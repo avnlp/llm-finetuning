@@ -1,4 +1,4 @@
-# Prompt Template for RAG based on FactScore dataset
+"""Prompt template for RAG based on FactScore dataset."""
 
 system_message = (
     "You are a fact-checking assistant analyzing statements for accuracy and reliability based on the provided context from the FactScore dataset. Your task is to:\n"

@@ -1,5 +1,8 @@
+"""GRPO training script for Llama3 on FreshQA dataset."""
+
 import os
 import re
+from typing import Any, Dict, List
 
 import openai
 import pandas as pd
@@ -8,7 +11,10 @@ import yaml
 from datasets import load_dataset
 from deepeval.metrics import AnswerRelevancyMetric
 from deepeval.test_case import LLMTestCase
-from evidently.metrics import BinaryClassificationPromptTemplate, LLMEvaluator
+from evidently.metrics import (  # type: ignore[import-untyped]
+    BinaryClassificationPromptTemplate,
+    LLMEvaluator,
+)
 from transformers import AutoTokenizer, TrainingArguments
 from trl import AutoModelForCausalLMWithValueHead, GRPOConfig, GRPOTrainer
 
@@ -57,7 +63,10 @@ correctness_evaluator = LLMEvaluator(
 )
 
 
-def reward_func(prompts, completions, answers, **kwargs) -> list[float]:
+def reward_func(
+    prompts: List[str], completions: List[str], answers: List[str], **kwargs: Any
+) -> List[float]:
+    """Compute reward scores for prompts, completions, and answers."""
     # Batch correctness evaluation
     test_df = pd.DataFrame({"prediction": completions, "target": answers})
     correctness_result = correctness_evaluator.evaluate(
@@ -112,7 +121,8 @@ tokenizer.pad_token = tokenizer.eos_token
 
 
 # Preprocessing function for FreshQA
-def preprocess_freshqa(examples):
+def preprocess_freshqa(examples: Dict[str, List[Any]]) -> Dict[str, List[Any]]:
+    """Preprocess FreshQA examples for training."""
     inputs, answers, groups = [], [], []
     for i in range(len(examples["question"])):
         context = examples["context"][i] or ""
@@ -134,7 +144,8 @@ def preprocess_freshqa(examples):
 
 
 # Load and preprocess dataset
-dataset = load_dataset(config["dataset"]["name"], split=config["dataset"]["split"]).map(
+dataset = load_dataset(config["dataset"]["name"], split=config["dataset"]["split"])
+dataset = dataset.map(
     preprocess_freshqa, batched=True, remove_columns=dataset.column_names
 )
 

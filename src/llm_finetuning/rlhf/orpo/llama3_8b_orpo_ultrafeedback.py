@@ -1,10 +1,14 @@
 # The code is taken from https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Llama3_(8B)-ORPO.ipynb
 # The code has been rewritten to work with the UltraFeedback dataset.
+"""ORPO training with Llama-3-8B on UltraFeedback dataset."""
+# type: ignore[import-not-found, misc]
+
+from typing import Any, Dict, Optional
 
 import numpy as np
 from datasets import load_dataset
 from trl import ORPOConfig, ORPOTrainer
-from unsloth import FastLanguageModel, PatchDPOTrainer
+from unsloth import FastLanguageModel, PatchDPOTrainer  # type: ignore[import-untyped]
 
 
 max_seq_length = 4096
@@ -55,7 +59,19 @@ EOS_TOKEN = tokenizer.eos_token
 
 
 # New formatting function for UltraFeedback
-def format_ultra_feedback(sample):
+
+
+def format_ultra_feedback(
+    sample: Dict[str, Any],
+) -> Optional[Dict[str, str]]:
+    """Format UltraFeedback sample for ORPO training.
+
+    Args:
+        sample: UltraFeedback example with instruction and completions.
+
+    Returns:
+        Dict with prompt, chosen, and rejected responses, or None if skipped.
+    """
     instruction = sample["instruction"]
     completions = sample["completions"]
 

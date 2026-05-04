@@ -1,4 +1,4 @@
-# Prompt Template for RAG based on TriviaQA dataset
+"""Prompt template for RAG based on TriviaQA dataset."""
 
 system_message = (
     "You are a trivia expert designed to answer questions based on the TriviaQA dataset. Your task is to:\n"

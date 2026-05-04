@@ -6,7 +6,7 @@ Reward functions for training on BioASQ dataset:
 """
 
 import re
-from typing import List
+from typing import Any, List
 
 from rapidfuzz import fuzz
 
@@ -52,7 +52,7 @@ class BioASQRewardManager:
 
     @staticmethod
     def correctness_reward_func(
-        completions, instruction, answers, **kwargs
+        prompts: list[Any], completions: list[Any], answers: list[Any], **kwargs: Any
     ) -> list[float]:
         """Reward correctness: Scale based on answer quality."""
         responses = [completion[0]["content"] for completion in completions]
@@ -65,7 +65,9 @@ class BioASQRewardManager:
         return scores
 
     @staticmethod
-    def xml_structure_reward_func(completions, **kwargs) -> list[float]:
+    def xml_structure_reward_func(
+        prompts: list[Any], completions: list[Any], **kwargs: Any
+    ) -> list[float]:
         """Reward XML compliance: +5 if properly structured."""
         responses = [completion[0]["content"] for completion in completions]
         scores = []

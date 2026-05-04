@@ -1,11 +1,13 @@
+"""Add context columns to MedQA dataset."""
+
 from pathlib import Path
 
 import yaml
-from config import MedQAContextAdditionConfig
-from medqa_context_adder import MedQAContextAdder
+from config import MedQAContextAdditionConfig  # type: ignore[import-not-found]
+from medqa_context_adder import MedQAContextAdder  # type: ignore[import-not-found]
 
 
-def main(config_path: str):
+def main(config_path: str) -> None:
     """Run the MedQA context addition process."""
     config_file = Path(config_path)
 

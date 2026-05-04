@@ -1,11 +1,13 @@
+"""Llama3-1-8B GRPO training script for GSM8K dataset."""
+# type: ignore[import-not-found, misc]
 # Code taken from: https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/HuggingFace%20Course-Gemma3_(1B)-GRPO.ipynb
-## Dataset preprocessing for GSM8K is imported from the data_preprocessing.py file, and reward functions are imported from the rewards.py file.
 
-# Modified to use YAML configuration file
 import yaml
-from data_preprocessing import format_gsm8k_dataset
-from datasets import load_dataset
-from rewards import (
+from data_preprocessing import (  # type: ignore[import-not-found, misc]
+    format_gsm8k_dataset,  # type: ignore[import-not-found, misc]
+)
+from datasets import Dataset, load_dataset
+from rewards import (  # type: ignore[import-not-found, misc]
     correctness_reward_func,
     int_reward_func,
     soft_format_reward_func,
@@ -13,8 +15,11 @@ from rewards import (
     xmlcount_reward_func,
 )
 from trl import GRPOConfig, GRPOTrainer
-from unsloth import FastLanguageModel, is_bfloat16_supported
-from vllm import SamplingParams
+from unsloth import (  # type: ignore[import-untyped]
+    FastLanguageModel,
+    is_bfloat16_supported,
+)
+from vllm import SamplingParams  # type: ignore[import-not-found, misc]
 
 
 # Load configuration from YAML file
@@ -57,7 +62,9 @@ model = FastLanguageModel.get_peft_model(
 
 
 # ================ DATASET PREPROCESSING ================
-def get_gsm8k_questions(split=dataset_config["split"]) -> Dataset:
+def get_gsm8k_questions(split: str | None = None) -> Dataset:
+    """Load and format GSM8K dataset."""
+    split = split or dataset_config["split"]
     data = load_dataset(dataset_config["name"], dataset_config["config"])[split]
     return format_gsm8k_dataset(data, SYSTEM_PROMPT)
 
@@ -142,7 +149,8 @@ print("Training completed!")
 
 
 # ================ INFERENCE ================
-def generate_response(question, use_lora=False):
+def generate_response(question: str, use_lora: bool = False) -> str:
+    """Generate response for a question using the model."""
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": question},

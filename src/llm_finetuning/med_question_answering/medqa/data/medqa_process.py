@@ -1,11 +1,15 @@
+"""Process MedQA dataset files."""
+
 from pathlib import Path
 
 import yaml
-from config import MedQADatasetProcessingConfig
-from medqa_dataset_processor import MedQADatasetProcessor
+from config import MedQADatasetProcessingConfig  # type: ignore[import-not-found]
+from medqa_dataset_processor import (  # type: ignore[import-not-found]
+    MedQADatasetProcessor,  # type: ignore[import-not-found]
+)
 
 
-def main(config_path: str):
+def main(config_path: str) -> None:
     """Process the MedQA dataset."""
     config_file = Path(config_path)
 

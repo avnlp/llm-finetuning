@@ -1,16 +1,11 @@
 """MedQA Model Fine-Tuning Pipeline.
 
-This script implements a full workflow for fine-tuning LLMs using Group Relative Policy Optimization (GRPO) for Medical Question Answering (MedQA).
+Fine-tune LLMs using GRPO for Medical Question Answering (MedQA).
+Includes model initialization, dataset loading, prompt formatting,
+GRPO training configuration, and multi-objective reward functions.
 
-The pipeline includes:
-- Model and tokenizer initialization with optimized 4-bit quantization
-- Dataset loading and prompt formatting
-- Training configuration setup with GRPO parameters
-- Multi-objective reward function integration
-- Training execution and model saving
-
-The fine-tuning process incorporates reward functions that evaluate:
-1. Answer correctness (using LLM-as-a-judge)
+The fine-tuning process evaluates:
+1. Answer correctness (using LLM-as-judge)
 2. XML structure compliance
 
 Key Components:
@@ -23,15 +18,15 @@ Key Components:
 import yaml
 from datasets import load_dataset
 from trl import GRPOConfig, GRPOTrainer
-from unsloth import FastLanguageModel
-from vllm import SamplingParams
+from unsloth import FastLanguageModel  # type: ignore[import-untyped]
+from vllm import SamplingParams  # type: ignore[import-not-found]
 
 from .prompts import SYSTEM_PROMPT, USER_PROMPT
 from .reward_functions import RewardManager
 from .train_config import MedQATrainConfig
 
 
-def main(config_path: str):
+def main(config_path: str) -> None:
     """Fine-tune LLM using GRPO for MedQA.
 
     Args:
@@ -39,7 +34,8 @@ def main(config_path: str):
     """
     # Load configuration if path is provided
     if config_path:
-        config = MedQATrainConfig(**yaml.safe_load(open(config_path)))
+        with open(config_path) as f:
+            config = MedQATrainConfig(**yaml.safe_load(f))
 
         model_name = config.model_name
         max_seq_length = config.max_seq_length

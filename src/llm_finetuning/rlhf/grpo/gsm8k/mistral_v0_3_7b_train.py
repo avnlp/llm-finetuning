@@ -1,25 +1,33 @@
-# This implementation is based on the codefrom: https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Mistral_v0.3_(7B)-GRPO.ipynb
-# Dataset preprocessing for GSM8K is imported from the data_preprocessing.py file, and reward functions are imported from the rewards.py file.
+"""Mistral-v0.3-7B GRPO training script for GSM8K dataset."""
+# type: ignore[import-not-found, misc]
+# This implementation is based on code from:
+# https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/Mistral_v0.3_(7B)-GRPO.ipynb
 
-
+from data_preprocessing import (  # type: ignore[import-not-found, misc]
+    format_gsm8k_dataset,  # type: ignore[import-not-found, misc]
+)
 from datasets import Dataset, load_dataset
-from rewards import (
+from rewards import (  # type: ignore[import-not-found, misc]
     correctness_reward_func_mistral as correctness_reward_func,
 )
-from rewards import (
+from rewards import (  # type: ignore[import-not-found, misc]
     int_reward_func_mistral as int_reward_func,
 )
-from rewards import (
+from rewards import (  # type: ignore[import-not-found, misc]
     soft_format_reward_func_mistral as soft_format_reward_func,
 )
-from rewards import (
+from rewards import (  # type: ignore[import-not-found, misc]
     strict_format_reward_func_mistral as strict_format_reward_func,
 )
-from rewards import (
+from rewards import (  # type: ignore[import-not-found, misc]
     xmlcount_reward_func_mistral as xmlcount_reward_func,
 )
 from trl import GRPOConfig, GRPOTrainer
-from unsloth import FastLanguageModel, is_bfloat16_supported
+from unsloth import (  # type: ignore[import-untyped]
+    FastLanguageModel,
+    is_bfloat16_supported,
+)
+from vllm import SamplingParams  # type: ignore[import-not-found, misc]
 
 
 # Mistral model configuration
@@ -70,15 +78,14 @@ Respond in the following format:
 
 
 def extract_hash_answer(text: str) -> str | None:
+    """Extract answer from GSM8K format."""
     if "####" not in text:
         return None
     return text.split("####")[1].strip()
 
 
-from data_preprocessing import format_gsm8k_dataset
-
-
-def get_gsm8k_questions(split="train") -> Dataset:
+def get_gsm8k_questions(split: str = "train") -> Dataset:
+    """Load and format GSM8K dataset."""
     data = load_dataset("openai/gsm8k", "main")[split]
     return format_gsm8k_dataset(data, SYSTEM_PROMPT)
 
@@ -144,9 +151,6 @@ text = tokenizer.apply_chat_template(
     tokenize=False,
     add_generation_prompt=True,
 )
-
-from vllm import SamplingParams
-
 
 sampling_params = SamplingParams(
     temperature=0.8,
