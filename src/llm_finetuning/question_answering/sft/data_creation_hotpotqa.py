@@ -1,5 +1,14 @@
-from datasets import Dataset, DatasetDict, load_dataset
-from huggingface_hub import HfApi, notebook_login
+"""Data creation script for HotPotQA dataset."""
+
+from datasets import (  # type: ignore[import-not-found, misc]
+    Dataset,
+    DatasetDict,
+    load_dataset,
+)
+from huggingface_hub import (  # type: ignore[import-not-found, misc]
+    HfApi,
+    notebook_login,
+)
 
 
 # Configuration
@@ -19,7 +28,7 @@ Context:
 <|start_header_id|>assistant<|end_header_id|>\n\n{answer}<|eot_id|>"""
 
 
-def format_context(context):
+def format_context(context) -> str:  # type: ignore[no-untyped-def, return]
     """Format context dictionary into readable text."""
     context_text = ""
     for i, title in enumerate(context["title"]):
@@ -28,10 +37,10 @@ def format_context(context):
     return context_text.strip()
 
 
-def preprocess_hotpot(example):
+def preprocess_hotpot(example) -> dict:  # type: ignore[no-untyped-def, return]
     """Preprocess each example into the required format."""
     # Extract and format context
-    context_str = format_context(example["context"])
+    context_str = format_context(example["context"])  # type: ignore[no-untyped-call]
 
     # Format supporting facts
     supporting_facts = []
@@ -54,14 +63,14 @@ def preprocess_hotpot(example):
     }
 
 
-def create_dataset():
+def create_dataset() -> DatasetDict:  # type: ignore[no-untyped-def, return]
     """Create and split the dataset."""
     # Load and sample dataset
     full_dataset = load_dataset(DATASET_NAME, CONFIG, split="train")
     sampled = full_dataset.shuffle(seed=42).select(range(SAMPLE_SIZE))
 
     # Preprocess
-    processed = sampled.map(preprocess_hotpot)
+    processed = sampled.map(preprocess_hotpot)  # type: ignore[no-untyped-call]
 
     # Convert to pandas for easy splitting
     df = processed.to_pandas()
@@ -82,7 +91,7 @@ def create_dataset():
     )
 
 
-def upload_to_hf(dataset_dict, repo_id):
+def upload_to_hf(dataset_dict, repo_id) -> str:  # type: ignore[no-untyped-def, return]
     """Upload dataset to Hugging Face Hub."""
     HfApi()
     dataset_dict.push_to_hub(repo_id)
@@ -95,7 +104,7 @@ if __name__ == "__main__":
 
     # Create dataset
     print("Creating dataset...")
-    hotpot_ds = create_dataset()
+    hotpot_ds = create_dataset()  # type: ignore[no-untyped-call]
 
     # Print sample
     print("\nSample training example:")
@@ -103,7 +112,7 @@ if __name__ == "__main__":
 
     # Upload to Hub
     print(f"\nUploading dataset to {HF_REPO_ID}...")
-    upload_to_hf(hotpot_ds, HF_REPO_ID)
+    upload_to_hf(hotpot_ds, HF_REPO_ID)  # type: ignore[no-untyped-call]
 
     print("\nProcess completed successfully!")
     print(

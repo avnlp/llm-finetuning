@@ -1,15 +1,10 @@
 """PubMedQA Model Fine-Tuning Pipeline.
 
-This script implements a workflow for fine-tuning LLMs using Group Relative Policy Optimization (GRPO) for PubMedQA.
+Fine-tune LLMs using GRPO for PubMedQA dataset.
+Includes model initialization, dataset loading, prompt formatting,
+GRPO training configuration, and multi-objective reward functions.
 
-The pipeline includes:
-- Model and tokenizer initialization with optimized 4-bit quantization
-- PubMedQA dataset loading and prompt formatting
-- Training configuration setup with GRPO parameters
-- Multi-objective reward function integration
-- Training execution and model saving
-
-The fine-tuning process incorporates reward functions that evaluate:
+The fine-tuning evaluates:
 1. Answer correctness (Yes/No/Maybe)
 2. XML structure compliance
 
@@ -23,15 +18,15 @@ Key Components:
 import yaml
 from datasets import load_dataset
 from trl import GRPOConfig, GRPOTrainer
-from unsloth import FastLanguageModel
-from vllm import SamplingParams
+from unsloth import FastLanguageModel  # type: ignore[import-untyped]
+from vllm import SamplingParams  # type: ignore[import-not-found]
 
-from .prompts import SYSTEM_PROMPT, PUBMEDQA_USER_PROMPT
+from .prompts import PUBMEDQA_USER_PROMPT, SYSTEM_PROMPT
 from .reward_functions import RewardManager
 from .train_config import PubMedQATrainConfig
 
 
-def main(config_path: str):
+def main(config_path: str) -> None:
     """Fine-tune LLM using GRPO for PubMedQA.
 
     Args:
@@ -39,7 +34,8 @@ def main(config_path: str):
     """
     # Load configuration if path is provided
     if config_path:
-        config = PubMedQATrainConfig(**yaml.safe_load(open(config_path)))
+        with open(config_path) as f:
+            config = PubMedQATrainConfig(**yaml.safe_load(f))
 
         model_name = config.model_name
         max_seq_length = config.max_seq_length
@@ -80,7 +76,15 @@ def main(config_path: str):
     model = FastLanguageModel.get_peft_model(
         model,
         r=lora_rank,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        target_modules=[
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj",
+        ],
         lora_alpha=lora_rank * 2,
         use_gradient_checkpointing="unsloth",
         random_state=3407,
@@ -94,7 +98,12 @@ def main(config_path: str):
         lambda x: {
             "prompt": [
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": PUBMEDQA_USER_PROMPT.format(question=x["question"], context=x["context"])},
+                {
+                    "role": "user",
+                    "content": PUBMEDQA_USER_PROMPT.format(
+                        question=x["question"], context=x["context"]
+                    ),
+                },
             ],
             "label": x["final_decision"],  # Yes / No / Maybe
         }
@@ -114,4 +123,31 @@ def main(config_path: str):
         vllm_sampling_params=vllm_sampling_params,
         learning_rate=learning_rate,
         weight_decay=weight_decay,
-        war
+        warmup_ratio=warmup_ratio,
+        lr_scheduler_type=lr_scheduler_type,
+        optim=optim,
+        logging_steps=logging_steps,
+        per_device_train_batch_size=per_device_train_batch_size,
+        gradient_accumulation_steps=gradient_accumulation_steps,
+        num_generations=num_generations,
+        max_completion_length=max_new_tokens,
+        max_steps=max_steps,
+        save_steps=save_steps,
+        report_to=report_to,
+        output_dir=output_dir,
+    )
+
+    # Initialize GRPO trainer with multi-objective rewards
+    trainer = GRPOTrainer(
+        model=model,
+        processing_class=tokenizer,
+        reward_funcs=[
+            RewardManager.correctness_reward_func,
+            RewardManager.xml_structure_reward_func,
+        ],
+        args=training_args,
+        train_dataset=dataset,
+    )
+
+    # Execute training process
+    trainer.train()

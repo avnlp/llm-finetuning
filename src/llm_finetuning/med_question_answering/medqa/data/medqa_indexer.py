@@ -1,10 +1,12 @@
+"""Module docstring."""
+
 import logging
 from typing import Any
 
 import tqdm
-from config import MedQAIndexingConfig
+from config import MedQAIndexingConfig  # type: ignore[import-not-found]
 from datasets import load_dataset
-from pymilvus import (
+from pymilvus import (  # type: ignore[import-untyped]
     DataType,
     Function,
     FunctionType,

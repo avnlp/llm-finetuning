@@ -1,8 +1,15 @@
+"""GSM8K dataset preprocessing utilities for GRPO training."""
+
+from typing import Any
+
+
 def extract_hash_answer(text: str) -> str | None:
+    """Extract answer from GSM8K format with '####' separator."""
     return text.split("####")[1].strip() if "####" in text else None
 
 
-def format_gsm8k_dataset(dataset, system_prompt: str) -> dict:
+def format_gsm8k_dataset(dataset: Any, system_prompt: str) -> dict:
+    """Format GSM8K dataset with system prompt and chat template."""
     return dataset.map(
         lambda x: {
             "prompt": [
@@ -14,7 +21,8 @@ def format_gsm8k_dataset(dataset, system_prompt: str) -> dict:
     )
 
 
-def get_tokenized_lengths(dataset, tokenizer) -> list:
+def get_tokenized_lengths(dataset: Any, tokenizer: Any) -> list:
+    """Get tokenized lengths for dataset prompts."""
     return dataset.map(
         lambda x: {
             "tokens": tokenizer.apply_chat_template(
@@ -26,4 +34,5 @@ def get_tokenized_lengths(dataset, tokenizer) -> list:
 
 
 def get_max_prompt_length(tokenized_lengths: list) -> int:
+    """Get maximum prompt length from tokenized lengths."""
     return max(len(tokens) for tokens in tokenized_lengths) + 1

@@ -1,3 +1,5 @@
+"""Prefix Tuning fine-tuning module for causal language models."""
+
 import argparse
 
 import torch
@@ -13,7 +15,8 @@ from trl import SFTTrainer
 from llm_finetuning.sft.data_preparation import Dataloader
 
 
-def main(args):
+def main(args) -> None:  # type: ignore[no-untyped-def]
+    """Execute Prefix Tuning fine-tuning training."""
     # Initialize the Dataloader class
     dataloader = Dataloader(
         dataset_name=args.dataset_name,
@@ -137,10 +140,10 @@ if __name__ == "__main__":
         help="User prompt.",
     )
     parser.add_argument(
-        "--system_message_inputs", type=dict, default={}, help="System message inputs."
+        "--system_message_inputs", type=str, default="{}", help="System message inputs."
     )
     parser.add_argument(
-        "--user_message_inputs", type=dict, default={}, help="User message inputs."
+        "--user_message_inputs", type=str, default="{}", help="User message inputs."
     )
 
     # Model arguments

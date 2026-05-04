@@ -1,11 +1,13 @@
+"""Chunk MedQA corpus files for processing."""
+
 import json
 import os
 from pathlib import Path
 
 import tqdm
-from config import MedQACorpusChunkingConfig
+from config import MedQACorpusChunkingConfig  # type: ignore[import-not-found]
 from datasets import Dataset, DatasetDict
-from unstructured.partition.text import partition_text
+from unstructured.partition.text import partition_text  # type: ignore[import-untyped]
 
 
 class MedQACorpusChunker:

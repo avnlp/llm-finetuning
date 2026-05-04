@@ -1,11 +1,15 @@
 # Code taken from: https://colab.research.google.com/drive/1MRgGtLWuZX4ypSfGguFgC-IblTvO2ivM?usp=sharing
 # The code has been rewritten to work with the UltraFeedback dataset.
+"""KTO training with Qwen2.5 on UltraFeedback dataset."""
+# type: ignore[import-not-found, misc]
+
+from typing import Any, Dict, List
 
 import torch
 from datasets import Dataset, load_dataset
 from transformers import TextStreamer
 from trl import KTOConfig, KTOTrainer
-from unsloth import FastLanguageModel, PatchDPOTrainer
+from unsloth import FastLanguageModel, PatchDPOTrainer  # type: ignore[import-untyped]
 
 
 # Apply KTO patch first
@@ -51,7 +55,17 @@ model = FastLanguageModel.get_peft_model(
 
 
 # New function to process UltraFeedback for KTO
-def process_ultra_feedback(example):
+
+
+def process_ultra_feedback(example: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Extract KTO examples from UltraFeedback completions.
+
+    Args:
+        example: UltraFeedback example with instruction and completions.
+
+    Returns:
+        List of KTO examples with prompt, completion, and label.
+    """
     instruction = example["instruction"]
     completions = example["completions"]
 
@@ -153,7 +167,17 @@ print("Model saved to 'kto_model' directory")
 
 
 # Inference function
-def generate_response(message):
+
+
+def generate_response(message: str) -> str:
+    """Generate a response for the given message using the trained model.
+
+    Args:
+        message: Input message from user.
+
+    Returns:
+        Generated response string.
+    """
     messages = [{"role": "user", "content": message}]
     inputs = tokenizer.apply_chat_template(
         messages, tokenize=True, add_generation_prompt=True, return_tensors="pt"

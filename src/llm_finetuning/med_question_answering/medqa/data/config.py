@@ -1,3 +1,5 @@
+"""Configuration classes for MedQA data processing."""
+
 from pydantic import BaseModel
 
 

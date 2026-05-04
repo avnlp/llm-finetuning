@@ -1,4 +1,4 @@
-# Prompt Template for RAG based on Earning Call dataset
+"""Prompt template for RAG based on Earning Call dataset."""
 
 system_message = (
     "You are a knowledge assistant designed to answer open-ended questions from the Earnings Call dataset. Your task is to:\n"

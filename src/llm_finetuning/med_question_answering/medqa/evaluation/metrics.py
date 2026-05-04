@@ -1,23 +1,22 @@
 """Evaluation Metrics for BioASQ generations.
 
-This module provides evaluation framework for BioASQ outputs that follow a specific XML structure
-with answer and item tags for factoid/list questions.
+This module provides evaluation for BioASQ outputs with XML structure
+containing answer and item tags for factoid/list questions.
 
-The evaluation includes:
+Evaluation includes:
 1. XML structural integrity checks
-2. Answer correctness using fuzzy matching and LLM-as-a-judge metrics
+2. Answer correctness using fuzzy matching and LLM-as-judge metrics
 3. Traditional information retrieval metrics (F1, Precision, Recall)
 
-The generations contain these required XML tags:
-<answer>, <item>
+Required XML tags: <answer>, <item>
 """
 
 import re
-from typing import List, Dict, Any
-from rapidfuzz import fuzz, process
+from typing import Any, Dict, List
 
 from deepeval.metrics import GEval
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
+from rapidfuzz import fuzz, process
 from tenacity import retry, wait_random_exponential
 from tqdm import tqdm
 
@@ -61,18 +60,20 @@ class BioASQEvaluator:
             Dictionary containing structure scores
         """
         scores = {}
-        
+
         # Check answer tags
         answer_open_count = generation.count("<answer>")
         answer_close_count = generation.count("</answer>")
-        scores["answer_structure"] = 1.0 if answer_open_count == 1 and answer_close_count == 1 else 0.0
-        
+        scores["answer_structure"] = (
+            1.0 if answer_open_count == 1 and answer_close_count == 1 else 0.0
+        )
+
         # Check item tags
         item_open_count = generation.count("<item>")
         item_close_count = generation.count("</item>")
         item_valid = item_open_count >= 1 and item_open_count == item_close_count
         scores["item_structure"] = 1.0 if item_valid else 0.0
-        
+
         # Calculate overall structural integrity score
         scores["overall_structure_score"] = sum(scores.values()) / len(scores)
         return scores
@@ -84,21 +85,23 @@ class BioASQEvaluator:
             return 0.0
         return 2 * (precision * recall) / (precision + recall)
 
-    def evaluate_list_correctness(self, predicted_items: List[str], expected_items: List[str]) -> Dict[str, float]:
-        """Evaluate correctness of predicted items against expected items using fuzzy matching.
-        
-        Uses F1, precision, and recall metrics adapted for list answers.
+    def evaluate_list_correctness(
+        self, predicted_items: List[str], expected_items: List[str]
+    ) -> Dict[str, float]:
+        """Evaluate predicted items against expected using fuzzy matching.
+
+        Uses F1, precision, recall adapted for list answers.
         """
         if not expected_items:
             return {"f1": 0.0, "precision": 0.0, "recall": 0.0}
-        
+
         if not predicted_items:
             return {"f1": 0.0, "precision": 0.0, "recall": 0.0}
-        
+
         # Calculate matches using fuzzy matching
         matched_predicted = set()
         matched_expected = set()
-        
+
         # For each expected item, find the best matching predicted item
         for exp_item in expected_items:
             best_match, score, idx = process.extractOne(
@@ -107,22 +110,22 @@ class BioASQEvaluator:
             if score >= 70:  # Threshold for considering a match
                 matched_expected.add(exp_item)
                 matched_predicted.add(best_match)
-        
+
         # Calculate precision, recall, and F1
-        precision = len(matched_predicted) / len(predicted_items) if predicted_items else 0
+        precision = (
+            len(matched_predicted) / len(predicted_items) if predicted_items else 0
+        )
         recall = len(matched_expected) / len(expected_items) if expected_items else 0
         f1 = self.calculate_f1(precision, recall)
-        
-        return {
-            "f1": f1,
-            "precision": precision,
-            "recall": recall
-        }
+
+        return {"f1": f1, "precision": precision, "recall": recall}
 
     @retry(wait=wait_random_exponential(multiplier=1, max=60))
-    def evaluate_answer_correctness_llm(self, question: str, answer: str, expected_answer: str) -> float:
+    def evaluate_answer_correctness_llm(
+        self, question: str, answer: str, expected_answer: str
+    ) -> float:
         """Evaluate factual correctness using LLM-as-judge for BioASQ answers.
-        
+
         Args:
             question: Original user question
             answer: Generated answer from model (formatted string)
@@ -132,9 +135,7 @@ class BioASQEvaluator:
             Correctness score (0.0-1.0)
         """
         test_case = LLMTestCase(
-            input=question, 
-            actual_output=answer, 
-            expected_output=expected_answer
+            input=question, actual_output=answer, expected_output=expected_answer
         )
 
         # Configure evaluation criteria for BioASQ
@@ -146,14 +147,14 @@ class BioASQEvaluator:
                 LLMTestCaseParams.ACTUAL_OUTPUT,
                 LLMTestCaseParams.EXPECTED_OUTPUT,
             ],
-            model=self.LLM_AS_A_JUDGE_MODEL
+            model=self.LLM_AS_A_JUDGE_MODEL,
         )
         correctness_metric.measure(test_case)
         return correctness_metric.score
 
     def evaluate_generation(self, data: Dict[str, Any]) -> Dict[str, float]:
         """Run full evaluation pipeline on a single BioASQ generation.
-        
+
         Evaluation steps:
         1. XML structure validation
         2. Content extraction from XML tags
@@ -181,14 +182,18 @@ class BioASQEvaluator:
         # Content Extraction
         predicted_items = self.extract_items(generation)
         expected_items = data.get("answers", [])
-        
+
         # Traditional IR Metrics
         ir_metrics = self.evaluate_list_correctness(predicted_items, expected_items)
         metrics.update(ir_metrics)
-        
+
         # Format answers for LLM evaluation
-        predicted_str = ", ".join(predicted_items) if predicted_items else "No answer provided"
-        expected_str = ", ".join(expected_items) if expected_items else "No expected answers"
+        predicted_str = (
+            ", ".join(predicted_items) if predicted_items else "No answer provided"
+        )
+        expected_str = (
+            ", ".join(expected_items) if expected_items else "No expected answers"
+        )
 
         # LLM-as-Judge Evaluation
         metrics["llm_correctness"] = self.evaluate_answer_correctness_llm(
@@ -199,16 +204,22 @@ class BioASQEvaluator:
 
         # Composite Scoring
         content_keys = ["f1", "llm_correctness"]
-        metrics["content_score"] = sum(metrics[k] for k in content_keys) / len(content_keys)
+        metrics["content_score"] = sum(metrics[k] for k in content_keys) / len(
+            content_keys
+        )
 
         # Final overall score averages structure and content
-        metrics["overall_score"] = (metrics["overall_structure_score"] + metrics["content_score"]) / 2
+        metrics["overall_score"] = (
+            metrics["overall_structure_score"] + metrics["content_score"]
+        ) / 2
 
         return metrics
 
-    def evaluate_generations(self, generations: List[Dict[str, Any]]) -> Dict[str, float]:
+    def evaluate_generations(
+        self, generations: List[Dict[str, Any]]
+    ) -> Dict[str, float]:
         """Evaluate a batch of BioASQ generations and returns aggregate scores.
-        
+
         Args:
             generations: List of data dictionaries for evaluation
 
@@ -229,13 +240,18 @@ class BioASQEvaluator:
         }
 
         # Process each generation with progress tracking
-        for idx, data in enumerate(tqdm(generations, desc="Evaluating BioASQ generations")):
+        for _idx, data in enumerate(
+            tqdm(generations, desc="Evaluating BioASQ generations")
+        ):
             metrics = self.evaluate_generation(data)
 
             # Aggregate scores
-            for metric in score_accumulator.keys():
+            for metric in score_accumulator:
                 if metric in metrics:
                     score_accumulator[metric] += metrics[metric]
 
         # Calculate averages and round to 4 decimals
-        return {metric: round(total / len(generations), 4) for metric, total in score_accumulator.items()}
+        return {
+            metric: round(total / len(generations), 4)
+            for metric, total in score_accumulator.items()
+        }

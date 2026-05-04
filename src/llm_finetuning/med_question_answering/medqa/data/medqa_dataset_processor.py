@@ -1,7 +1,9 @@
+"""Process MedQA dataset files."""
+
 import json
 from typing import Any
 
-from config import MedQADatasetProcessingConfig
+from config import MedQADatasetProcessingConfig  # type: ignore[import-not-found]
 from datasets import Dataset, DatasetDict
 
 

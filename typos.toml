@@ -1,0 +1,7 @@
+[default.extend-words]
+ba = "ba"
+nin = "nin"
+nd = "nd"
+
+[files]
+extend-exclude = ["*.json", "*.txt"]

@@ -1,4 +1,4 @@
-# Prompt Template for RAG based on ARC data
+"""Prompt template for RAG based on ARC data."""
 
 system_message = (
     "You are a knowledge assistant designed to answer open-ended questions from the TriviaQA dataset. Your task is to:\n"

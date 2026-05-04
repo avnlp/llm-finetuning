@@ -1,5 +1,14 @@
-from datasets import Dataset, DatasetDict, load_dataset
-from huggingface_hub import HfApi, notebook_login
+"""Data creation script for TriviaQA dataset."""
+
+from datasets import (  # type: ignore[import-not-found, misc]
+    Dataset,
+    DatasetDict,
+    load_dataset,
+)
+from huggingface_hub import (  # type: ignore[import-not-found, misc]
+    HfApi,
+    notebook_login,
+)
 
 
 # Configuration
@@ -19,7 +28,7 @@ Context:
 <|start_header_id|>assistant<|end_header_id|>\n\n{answer}<|eot_id|>"""
 
 
-def format_context(example):
+def format_context(example) -> str:  # type: ignore[no-untyped-def, return]
     """Format context from entity pages and search results."""
     context_text = ""
 
@@ -38,10 +47,10 @@ def format_context(example):
     return context_text.strip()
 
 
-def preprocess_triviaqa(example):
+def preprocess_triviaqa(example) -> dict:  # type: ignore[no-untyped-def, return]
     """Preprocess each example into the required format."""
     # Extract and format context
-    context_str = format_context(example)
+    context_str = format_context(example)  # type: ignore[no-untyped-call]
 
     return {
         "id": example["question_id"],
@@ -57,14 +66,14 @@ def preprocess_triviaqa(example):
     }
 
 
-def create_dataset():
+def create_dataset() -> DatasetDict:  # type: ignore[no-untyped-def, return]
     """Create and split the dataset."""
     # Load and sample dataset
     full_dataset = load_dataset(DATASET_NAME, CONFIG, split="train")
     sampled = full_dataset.shuffle(seed=42).select(range(SAMPLE_SIZE))
 
     # Preprocess
-    processed = sampled.map(preprocess_triviaqa)
+    processed = sampled.map(preprocess_triviaqa)  # type: ignore[no-untyped-call]
 
     # Convert to pandas for easy splitting
     df = processed.to_pandas()
@@ -85,7 +94,7 @@ def create_dataset():
     )
 
 
-def upload_to_hf(dataset_dict, repo_id):
+def upload_to_hf(dataset_dict, repo_id) -> str:  # type: ignore[no-untyped-def, return]
     """Upload dataset to Hugging Face Hub."""
     HfApi()
     dataset_dict.push_to_hub(repo_id)
@@ -98,7 +107,7 @@ if __name__ == "__main__":
 
     # Create dataset
     print("Creating dataset...")
-    trivia_ds = create_dataset()
+    trivia_ds = create_dataset()  # type: ignore[no-untyped-call]
 
     # Print sample
     print("\nSample training example:")
@@ -106,7 +115,7 @@ if __name__ == "__main__":
 
     # Upload to Hub
     print(f"\nUploading dataset to {HF_REPO_ID}...")
-    upload_to_hf(trivia_ds, HF_REPO_ID)
+    upload_to_hf(trivia_ds, HF_REPO_ID)  # type: ignore[no-untyped-call]
 
     print("\nProcess completed successfully!")
     print(

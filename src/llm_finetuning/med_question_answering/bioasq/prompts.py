@@ -1,3 +1,5 @@
+"""Prompts for BioASQ fine-tuning."""
+
 SYSTEM_PROMPT = (
     "You are a biomedical research assistant. "
     "Carefully read the given biomedical context and answer the question. "

@@ -2,10 +2,10 @@
 
 import json
 
-from .metrics_bioasq import BioASQEvaluator
+from .metrics_bioasq import BioASQEvaluator  # type: ignore[import-untyped]
 
 
-def main(generations_file: str, scores_file: str):
+def main(generations_file: str, scores_file: str) -> None:
     """Run evaluation on BioASQ generations."""
     # Load generations
     with open(generations_file) as f:

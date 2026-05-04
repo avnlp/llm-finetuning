@@ -5,7 +5,7 @@ import json
 from .metrics import Evaluator
 
 
-def main(generations_file: str, scores_file: str):
+def main(generations_file: str, scores_file: str) -> None:
     """Run evaluation on generations."""
     # Load generations
     with open(generations_file) as f:

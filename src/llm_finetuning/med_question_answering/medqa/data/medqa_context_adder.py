@@ -1,11 +1,13 @@
+"""Add context to MedQA dataset using retrieval."""
+
 import json
 import logging
 from typing import Any
 
 import tqdm
-from config import MedQAContextAdditionConfig
+from config import MedQAContextAdditionConfig  # type: ignore[import-not-found]
 from datasets import Dataset, DatasetDict, load_dataset
-from pymilvus import MilvusClient
+from pymilvus import MilvusClient  # type: ignore[import-untyped]
 from sentence_transformers import SentenceTransformer
 
 
@@ -212,12 +214,16 @@ class MedQAContextAdder:
         )
 
     def process(self, upload_to_hub: bool = True) -> DatasetDict:
-        """Main processing method to add context and upload the dataset.
+        """Add context to dataset and upload if requested.
 
         Args:
-            upload_to_hub (bool): Whether to upload to HuggingFace Hub
+            upload_to_hub: Whether to upload to HuggingFace Hub
 
         Returns:
-            DatasetDict: Processed dataset dictionary
+            Processed dataset dictionary
         """
+        dataset_dict = self.load_dataset()
+        updated_dataset_dict = self.add_context_to_dataset(dataset_dict)
+        if upload_to_hub:
+            self.upload_to_huggingface(updated_dataset_dict)
         return updated_dataset_dict

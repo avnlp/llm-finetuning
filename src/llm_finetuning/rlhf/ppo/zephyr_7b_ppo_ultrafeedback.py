@@ -1,8 +1,13 @@
+"""PPO training with Zephyr on UltraFeedback dataset."""
+# type: ignore[import-not-found, misc]
+
+from typing import Any, Dict, List
+
 import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, TextStreamer, pipeline
 from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer
-from unsloth import FastLanguageModel
+from unsloth import FastLanguageModel  # type: ignore[import-untyped]
 
 
 # Model configuration
@@ -53,7 +58,17 @@ reward_model = pipeline(
 
 
 # New function to process UltraFeedback dataset for PPO
-def process_ultra_feedback_for_ppo(sample):
+
+
+def process_ultra_feedback_for_ppo(sample: Dict[str, Any]) -> Dict[str, str]:
+    """Extract prompt from UltraFeedback sample for PPO training.
+
+    Args:
+        sample: UltraFeedback example with instruction.
+
+    Returns:
+        Dict with prompt key.
+    """
     instruction = sample["instruction"]
     return {"prompt": instruction}
 
@@ -69,7 +84,17 @@ dataset = dataset.train_test_split(test_size=0.995, seed=42)["train"]
 
 
 # Apply Zephyr chat template to prompts
-def format_prompt(example):
+
+
+def format_prompt(example: Dict[str, str]) -> Dict[str, str]:
+    """Apply Zephyr chat template to prompt.
+
+    Args:
+        example: Dict with prompt key.
+
+    Returns:
+        Dict with formatted prompt.
+    """
     system_message = {"role": "system", "content": ""}
     user_message = {"role": "user", "content": example["prompt"]}
 
@@ -83,7 +108,21 @@ dataset = dataset.map(format_prompt)
 
 
 # Reward function using the reward model
-def reward_function(samples, responses, **kwargs):
+
+
+def reward_function(
+    samples: List[str], responses: List[str], **kwargs: Any
+) -> List[torch.Tensor]:
+    """Compute reward scores for prompts and responses.
+
+    Args:
+        samples: List of prompt strings.
+        responses: List of response strings.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        List of reward tensors.
+    """
     rewards = []
     for prompt, response in zip(samples, responses):
         # Combine prompt and response

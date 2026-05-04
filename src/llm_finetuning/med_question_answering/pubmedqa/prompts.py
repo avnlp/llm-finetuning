@@ -1,3 +1,5 @@
+"""Prompts for PubMedQA fine-tuning."""
+
 SYSTEM_PROMPT = (
     "You are a biomedical research assistant. "
     "Carefully read the given PubMed abstract and answer the question. "

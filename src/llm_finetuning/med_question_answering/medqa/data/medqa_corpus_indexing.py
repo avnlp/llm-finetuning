@@ -1,11 +1,13 @@
+"""Index MedQA corpus in Milvus."""
+
 from pathlib import Path
 
 import yaml
-from config import MedQAIndexingConfig
-from medqa_indexer import MedQAIndexer
+from config import MedQAIndexingConfig  # type: ignore[import-not-found]
+from medqa_indexer import MedQAIndexer  # type: ignore[import-not-found]
 
 
-def main(config_path: str):
+def main(config_path: str) -> None:
     """Run the MedQA corpus indexing process."""
     # Load configuration
     config_file = Path(config_path)

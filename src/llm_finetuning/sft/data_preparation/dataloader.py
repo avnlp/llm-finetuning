@@ -1,9 +1,13 @@
+"""Dataloader for preparing datasets with prompts for SFT training."""
+
 from typing import Any, Optional
 
 from datasets import load_dataset
 
 
 class Dataloader:
+    """Loads and formats datasets for SFT training with system and user prompts."""
+
     def __init__(
         self,
         dataset_name: str,
@@ -13,15 +17,15 @@ class Dataloader:
         system_message_inputs: Optional[dict[str, Any]] = None,
         user_message_inputs: Optional[dict[str, Any]] = None,
     ):
-        """Initializes the Dataloader class with dataset and prompts.
+        """Initialize the Dataloader with dataset and prompts.
 
         Args:
-            dataset_name (str): Name of the dataset to load.
-            split (str): Dataset split (e.g., 'train', 'test').
-            system_prompt (str): Template for the system message.
-            user_prompt (str): Template for the user message.
-            system_message_inputs (Dict[str, Any]): Input values for system prompt formatting.
-            user_message_inputs (Dict[str, Any]): Input values for user prompt formatting.
+            dataset_name: Name of the dataset to load.
+            split: Dataset split (e.g., 'train', 'test').
+            system_prompt: Template for the system message.
+            user_prompt: Template for the user message.
+            system_message_inputs: Input values for system prompt formatting.
+            user_message_inputs: Input values for user prompt formatting.
         """
         self.dataset_name = dataset_name
         self.split = split
@@ -32,20 +36,19 @@ class Dataloader:
         self.user_message_inputs = user_message_inputs or {}
 
     def _create_conversation(self, sample: dict[str, Any]) -> dict[str, Any]:
-        """Creates a conversation structure based on the sample and initialized prompts.
+        """Create a conversation structure from a sample.
 
         Args:
-            sample (Dict[str, Any]): A single sample from the dataset.
+            sample: A single sample from the dataset.
 
         Returns:
-            Dict[str, Any]: A dictionary representing the conversation.
+            A dictionary representing the conversation.
         """
-        # Ensure system and user prompts are correctly formatted
         try:
             system_message = self.system_prompt.format(**self.system_message_inputs)
         except KeyError as e:
             msg = f"Missing key in system_message_inputs: {e}"
-            raise ValueError(msg)
+            raise ValueError(msg) from e
 
         try:
             user_message = self.user_prompt.format(
@@ -53,7 +56,7 @@ class Dataloader:
             )
         except KeyError as e:
             msg = f"Missing key in user_message_inputs or sample: {e}"
-            raise ValueError(msg)
+            raise ValueError(msg) from e
 
         return {
             "messages": [

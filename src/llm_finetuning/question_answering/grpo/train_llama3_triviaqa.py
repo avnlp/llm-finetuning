@@ -1,5 +1,8 @@
+"""GRPO training script for Llama3 on TriviaQA dataset."""
+
 import os
 import re
+from typing import Any, Dict, List
 
 import openai
 import pandas as pd
@@ -8,12 +11,16 @@ import yaml
 from datasets import load_dataset
 from deepeval.metrics import AnswerRelevancyMetric
 from deepeval.test_case import LLMTestCase
-from evidently.metrics import BinaryClassificationPromptTemplate, LLMEvaluator
+from evidently.metrics import (  # type: ignore[import-untyped]
+    BinaryClassificationPromptTemplate,
+    LLMEvaluator,
+)
 from transformers import AutoTokenizer, TrainingArguments
 from trl import AutoModelForCausalLMWithValueHead, GRPOConfig, GRPOTrainer
 
 
-def main():
+def main() -> None:
+    """Run TriviaQA GRPO training."""
     # Load configuration
     with open("train_llama_3_triviaqa.yaml") as f:
         config = yaml.safe_load(f)
@@ -58,7 +65,9 @@ def main():
         openai_params={"model": config["reward"]["correctness"]["model"]},
     )
 
-    def reward_func(prompts, completions, answers, **kwargs) -> list[float]:
+    def reward_func(
+        prompts: List[str], completions: List[str], answers: List[str], **kwargs: Any
+    ) -> List[float]:
         rewards = []
         weights = config["reward"]["weights"]
 
@@ -127,7 +136,7 @@ def main():
         dataset = dataset.select(range(config["dataset"]["sample_size"]))
 
     # Preprocessing function
-    def preprocess_triviaqa(examples):
+    def preprocess_triviaqa(examples: Dict[str, List[Any]]) -> Dict[str, List[Any]]:
         queries = []
         answers = []
         groups = []  # Using dummy groups since TriviaQA doesn't provide groups
@@ -253,4 +262,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()  # type: ignore[no-untyped-call]

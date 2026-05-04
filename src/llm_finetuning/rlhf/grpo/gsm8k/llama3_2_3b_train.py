@@ -1,20 +1,24 @@
-# Code taken from:
-# Dataset preprocessing for GSM8K is imported from the data_preprocessing.py file, and reward functions are imported from the rewards.py file.
+"""Llama3-2-3B GRPO training script for GSM8K dataset."""
+# type: ignore[import-not-found, misc]
+# Code taken from: https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/HuggingFace%20Course-Gemma3_(1B)-GRPO.ipynb
 
-from data_preprocessing import (
+from data_preprocessing import (  # type: ignore[import-not-found, misc]
     format_gsm8k_dataset,
     get_max_prompt_length,
     get_tokenized_lengths,
 )
 from datasets import load_dataset
-from rewards import (
+from rewards import (  # type: ignore[import-not-found, misc]
     check_answer,
     check_numbers,
     match_format_approximately,
     match_format_exactly,
 )
 from trl import GRPOConfig, GRPOTrainer
-from unsloth import FastLanguageModel, is_bfloat16_supported
+from unsloth import (  # type: ignore[import-untyped]
+    FastLanguageModel,
+    is_bfloat16_supported,
+)
 
 
 # ================ CONFIGURATION ================

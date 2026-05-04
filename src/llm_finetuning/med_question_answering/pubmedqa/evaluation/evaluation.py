@@ -2,10 +2,10 @@
 
 import json
 
-from .metrics_pubmedqa import PubMedQAEvaluator
+from .metrics_pubmedqa import PubMedQAEvaluator  # type: ignore[import-untyped]
 
 
-def main(generations_file: str, scores_file: str):
+def main(generations_file: str, scores_file: str) -> None:
     """Run evaluation on PubMedQA generations."""
     # Load generations
     with open(generations_file) as f:

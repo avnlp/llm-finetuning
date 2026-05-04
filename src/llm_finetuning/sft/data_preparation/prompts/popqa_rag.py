@@ -1,4 +1,4 @@
-# Prompt Template for RAG Based on PopQA dataset
+"""Prompt Template for RAG Based on PopQA dataset."""
 
 system_message = (
     "You are a knowledge retrieval assistant specializing in answering trivia and general knowledge questions using the PopQA dataset. Your task is to:\n"

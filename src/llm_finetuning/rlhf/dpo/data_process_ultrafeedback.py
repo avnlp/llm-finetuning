@@ -1,9 +1,10 @@
-"""Data processing utilities for Direct Preference Optimization (DPO) with UltraFeedback dataset.
+"""Data processing for DPO with UltraFeedback dataset.
 
 This module provides functions to load, process, and prepare datasets for DPO training,
-specifically tailored for the UltraFeedback dataset format. It handles dataset mixing,
-chat template application, and proper formatting for preference learning tasks.
+specifically tailored for the UltraFeedback dataset format. Handles dataset mixing,
+chat template application, and formatting for preference learning tasks.
 """
+# type: ignore[import-not-found, misc]
 
 import os
 import re
@@ -44,10 +45,10 @@ def get_datasets(
         shuffle: Whether to shuffle the datasets after loading and concatenation.
 
     Returns:
-        DatasetDict: A dictionary containing the loaded and mixed datasets, keyed by split.
+        DatasetDict: Dictionary of loaded and mixed datasets, keyed by split.
 
     Raises:
-        ValueError: If the data configuration format is invalid or datasets cannot be loaded.
+        ValueError: If data config format is invalid or datasets cannot be loaded.
     """
     if splits is None:
         splits = ["train", "test"]
@@ -212,11 +213,10 @@ def apply_chat_template_example(
             and 'text_prompt' fields added.
 
     Raises:
-        ValueError: If the example doesn't contain the expected 'chosen' and 'rejected' keys,
-            or if the conversation format is invalid.
+        ValueError: If example lacks 'chosen'/'rejected' keys or conv format invalid.
     """
     if all(k in example for k in ("chosen", "rejected")):
-        # We filter out the prompt, so the text is everything after the last assistant token
+        # Filter out prompt; text is everything after the last assistant token
         prompt_messages = [
             next(msg for msg in example["chosen"] if msg["role"] == "user")
         ]

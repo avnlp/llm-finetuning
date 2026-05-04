@@ -1,8 +1,8 @@
 """Reward Functions for PubMedQA.
 
-We use the following reward functions for training PubMedQA:
-- Correctness reward function: Compares model's predicted Yes/No/Maybe with ground truth.
-- XML structure reward function: Ensures proper <answer>...</answer> formatting.
+We use reward functions for training PubMedQA:
+- Correctness reward: Compares Yes/No/Maybe with ground truth
+- XML structure reward: Ensures proper <answer> formatting
 """
 
 import re
@@ -33,9 +33,9 @@ class RewardManager:
         return 1.0 if pred == gold else 0.0
 
     @staticmethod
-    def correctness_reward_func(
-        completions, instruction, answer, **kwargs
-    ) -> list[float]:
+    def correctness_reward_func(  # type: ignore[no-untyped-def]
+        completions: list, instruction: str, answer: str, **kwargs
+    ) -> list[float]:  # type: ignore[no-untyped-def]
         """Reward correctness: +20 if prediction matches gold, else 0."""
         responses = [completion[0]["content"] for completion in completions]
         scores = []
@@ -47,7 +47,7 @@ class RewardManager:
         return scores
 
     @staticmethod
-    def xml_structure_reward_func(completions, **kwargs) -> list[float]:
+    def xml_structure_reward_func(completions: list, **kwargs) -> list[float]:  # type: ignore[no-untyped-def]
         """Reward XML compliance: +10 if <answer>...</answer> exists, else 0."""
         responses = [completion[0]["content"] for completion in completions]
         scores = []
