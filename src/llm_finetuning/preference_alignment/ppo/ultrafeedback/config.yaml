@@ -1,0 +1,8 @@
+model_id: "unsloth/llama-3-8b-bnb-4bit"
+output_dir: "./outputs/preference_alignment/ppo/ultrafeedback"
+learning_rate: 1.41e-5
+batch_size: 64
+mini_batch_size: 1
+gradient_accumulation_steps: 1
+ppo_epochs: 4
+max_new_tokens: 128
