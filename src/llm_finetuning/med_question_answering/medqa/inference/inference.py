@@ -17,8 +17,8 @@ from datasets import load_dataset
 from unsloth import FastLanguageModel  # type: ignore[import-untyped]
 from vllm import SamplingParams  # type: ignore[import-not-found]
 
+from ..prompts import SYSTEM_PROMPT, USER_PROMPT  # type: ignore[import-untyped]
 from .inference_config import InferenceConfig  # type: ignore[import-untyped]
-from .prompts import SYSTEM_PROMPT, USER_PROMPT  # type: ignore[import-untyped]
 
 
 def main(config_path: str) -> None:

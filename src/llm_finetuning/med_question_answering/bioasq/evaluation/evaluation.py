@@ -2,7 +2,7 @@
 
 import json
 
-from .metrics_bioasq import BioASQEvaluator  # type: ignore[import-untyped]
+from .metrics import BioASQEvaluator  # type: ignore[import-untyped]
 
 
 def main(generations_file: str, scores_file: str) -> None:

@@ -10,12 +10,12 @@ from trl import GRPOConfig, GRPOTrainer
 from unsloth import FastLanguageModel  # type: ignore[import-untyped]
 from vllm import SamplingParams  # type: ignore[import-not-found]
 
-from .prompts_bioasq import (  # type: ignore[import-untyped]
+from .prompts import (  # type: ignore[import-untyped]
     BIOASQ_USER_PROMPT,
     SYSTEM_PROMPT,
 )
-from .reward_functions_bioasq import BioASQRewardManager  # type: ignore[import-untyped]
-from .train_config_bioasq import BioASQTrainConfig  # type: ignore[import-untyped]
+from .reward_functions import BioASQRewardManager  # type: ignore[import-untyped]
+from .train_config import BioASQTrainConfig  # type: ignore[import-untyped]
 
 
 def main(config_path: str) -> None:
