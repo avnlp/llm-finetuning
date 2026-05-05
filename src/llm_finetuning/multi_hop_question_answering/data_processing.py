@@ -60,6 +60,12 @@ class MuSiQueLoader(MultiHopLoader):
 
     def load(self, split: str = "train") -> Dataset:
         """Load and filter MuSiQue to answerable examples, then map formatting."""
-        ds = load_dataset(self.config.dataset_id, split=split)
+        ds = load_dataset(
+            self.config.dataset_id,
+            self.config.subset,
+            split=split,
+            cache_dir=self.config.cache_dir,
+            **self.config.extra_load_kwargs,
+        )
         ds = ds.filter(lambda x: x["answerable"])
         return self._format_dataset(ds)
