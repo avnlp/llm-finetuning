@@ -7,7 +7,7 @@ and how the five training paradigms connect to data, models, and rewards.
 
 ## Design philosophy
 
-The repo contains **33 self-contained pipelines** — each with its own `train.py` and
+The repo contains **39 self-contained pipelines** — each with its own `train.py` and
 `config.yaml`. There is no central dispatcher and no shared trainer class.
 
 This design makes individual trade-offs explicit:
