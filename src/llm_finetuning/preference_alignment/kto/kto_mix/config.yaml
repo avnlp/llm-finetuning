@@ -1,0 +1,10 @@
+model_id: "unsloth/Qwen2.5-1.5B-Instruct"
+max_seq_length: 4096
+output_dir: "./outputs/preference_alignment/kto/kto_mix"
+learning_rate: 5.0e-7
+num_train_epochs: 1
+per_device_train_batch_size: 4
+gradient_accumulation_steps: 2
+lora_r: 16
+lora_alpha: 16
+target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
