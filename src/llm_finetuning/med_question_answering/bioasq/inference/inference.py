@@ -17,12 +17,12 @@ from datasets import load_dataset
 from unsloth import FastLanguageModel  # type: ignore[import-untyped]
 from vllm import SamplingParams  # type: ignore[import-not-found]
 
-from .inference_config_bioasq import (  # type: ignore[import-untyped]
-    BioASQInferenceConfig,  # type: ignore[import-untyped]
-)
-from .prompts_bioasq import (  # type: ignore[import-untyped]
+from ..prompts import (  # type: ignore[import-untyped]
     BIOASQ_USER_PROMPT,
     SYSTEM_PROMPT,
+)
+from .inference_config import (  # type: ignore[import-untyped]
+    BioASQInferenceConfig,  # type: ignore[import-untyped]
 )
 
 

@@ -2,7 +2,7 @@
 
 import json
 
-from .metrics_pubmedqa import PubMedQAEvaluator  # type: ignore[import-untyped]
+from .metrics import PubMedQAEvaluator  # type: ignore[import-untyped]
 
 
 def main(generations_file: str, scores_file: str) -> None:
