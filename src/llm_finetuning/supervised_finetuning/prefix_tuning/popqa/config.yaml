@@ -1,0 +1,13 @@
+model_id: "meta-llama/Llama-3.2-3B"
+dataset_name: "akariasai/PopQA"
+split: "test"
+output_dir: "./outputs/supervised_finetuning/prefix_tuning/popqa"
+
+num_train_epochs: 3
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 2.0e-4
+save_strategy: "epoch"
+logging_steps: 10
+
+num_virtual_tokens: 20
