@@ -1,0 +1,5 @@
+title = "LLM Finetuning Gitleaks Config"
+
+[allowlist]
+description = "Commit 10cb49cf: all secrets rotated prior to this config being added"
+commits = ["10cb49cf0580b6548d7735cd074ff45ac45c0c62"]
