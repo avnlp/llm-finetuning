@@ -44,8 +44,8 @@ dev = [
   "mypy>=2.0.0",
   "pip-audit>=2.10.0",
   "pre-commit>=4.6.0",
-  "ruff>=0.16.1",
-  "typos>=1.49.0",
+  "ruff>=0.16.6",
+  "typos>=1.50.1",
 ]
 
 [tool.uv]
