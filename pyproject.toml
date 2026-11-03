@@ -45,7 +45,7 @@ dev = [
   "pip-audit>=2.10.0",
   "pre-commit>=4.6.0",
   "ruff>=0.17.3",
-  "typos>=1.52.0",
+  "typos>=1.51.1",
 ]
 
 [tool.uv]
